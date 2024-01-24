@@ -1,11 +1,32 @@
 import 'dart:typed_data';
 
-// Convert a list of bytes in little-endian order to a BigInt.
+/// Converts a list of bytes in little-endian order to a BigInt.
+/// In little-endian, the least significant byte is at the lowest index.
 BigInt _leBytesToBigInt(Uint8List bytes) {
-  BigInt result = BigInt.zero;
-  for (int i = 0; i < bytes.length; i++) {
+  // Initialize 'aggregator' to accumulate the first 7 bytes efficiently.
+  // This 64-bit int is used for its efficiency before transitioning to BigInt.
+  int aggregator = 0;
+
+  // Accumulate each byte into 'aggregator', shifting according to byte position.
+  // This respects little-endian order, placing the least significant byte first.
+  aggregator |= bytes[0];
+  aggregator |= bytes[1] << 8;
+  aggregator |= bytes[2] << 16;
+  aggregator |= bytes[3] << 24;
+  aggregator |= bytes[4] << 32;
+  aggregator |= bytes[5] << 40;
+  aggregator |= bytes[6] << 48;
+
+  // Convert 'aggregator' to BigInt for handling larger numbers.
+  // Necessary for values exceeding the capacity of a 64-bit int.
+  BigInt result = BigInt.from(aggregator);
+
+  // Process remaining bytes (if any) beyond the first 7 as BigInts.
+  // Continue shifting and combining into 'result' for the correct total value.
+  for (int i = 7; i < bytes.length; i++) {
     result |= BigInt.from(bytes[i]) << (8 * i);
   }
+
   return result;
 }
 
@@ -21,8 +42,6 @@ Uint8List _bigIntTo16LeBytes(BigInt num) {
 
 // Clamp function as specified in RFC 8439.
 void _clamp(Uint8List r) {
-  assert(r.length == 16);
-
   r[3] &= 15;
   r[7] &= 15;
   r[11] &= 15;
@@ -34,6 +53,8 @@ void _clamp(Uint8List r) {
 
 /// Poly1305 MAC function algorithm as specified in RFC 8439.
 Uint8List poly1305Mac(Uint8List msg, Uint8List key) {
+  if (key.length < 16) throw ArgumentError('Invalid key');
+
   final Uint8List rBytes = key.sublist(0, 16);
   _clamp(rBytes);
 
