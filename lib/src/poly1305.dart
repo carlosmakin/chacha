@@ -52,7 +52,7 @@ void _clamp(Uint8List r) {
 }
 
 /// Poly1305 MAC function algorithm as specified in RFC 8439.
-Uint8List poly1305Mac(Uint8List msg, Uint8List key) {
+Uint8List poly1305Mac(Uint8List key, Uint8List msg) {
   if (key.length < 16) throw ArgumentError('Invalid key');
 
   final Uint8List rBytes = key.sublist(0, 16);

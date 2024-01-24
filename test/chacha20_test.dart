@@ -14,7 +14,7 @@ void main() {
       final Uint32List nonce = parseBlockHexString(testVector['nonce']!).buffer.asUint32List();
       final int counter = testVector['counter']!;
 
-      final Uint8List result = chacha20Block(key, counter, nonce);
+      final Uint8List result = chacha20Block(key, nonce, counter);
       final Uint8List expected = parseBlockHexString(testVector['keyStream']!);
 
       expect(result.length, equals(64));

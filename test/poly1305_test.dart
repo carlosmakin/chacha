@@ -13,7 +13,7 @@ void main() {
       final Uint8List key = parseBlockHexString(testVector['key']!);
       final Uint8List message = parseBlockHexString(testVector['message']!);
 
-      final Uint8List result = poly1305Mac(message, key);
+      final Uint8List result = poly1305Mac(key, message);
       final Uint8List expected = parseBlockHexString(testVector['tag']!);
 
       expect(result.length, equals(16));

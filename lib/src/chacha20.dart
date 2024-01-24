@@ -124,7 +124,7 @@ void _chacha20BlockRounds(Uint32List state) {
 /// - A 32-bit block count parameter, treated as a 32-bit little-endian integer.
 ///
 ///The output is 64 random-looking bytes.
-Uint8List chacha20Block(Uint32List key, int counter, Uint32List nonce) {
+Uint8List chacha20Block(Uint32List key, Uint32List nonce, int counter) {
   // Initialize the state with the constants, key, counter, and nonce
   final Uint32List state = Uint32List(16);
 
@@ -178,7 +178,7 @@ Uint8List chacha20(Uint8List key, Uint8List nonce, Uint8List data, [int counter 
   // Encrypt each full block
   final int fullBlocks = dataSize ~/ 64;
   for (int j = 0; j < fullBlocks; j++) {
-    final Uint8List keyStream = chacha20Block(key32Bit, counter + j, nonce32Bit);
+    final Uint8List keyStream = chacha20Block(key32Bit, nonce32Bit, counter + j);
     for (int i = 0; i < 64; i++) {
       output[j * 64 + i] = data[j * 64 + i] ^ keyStream[i];
     }
@@ -187,7 +187,7 @@ Uint8List chacha20(Uint8List key, Uint8List nonce, Uint8List data, [int counter 
   // Handle any remaining partial block
   final int remaining = dataSize % 64;
   if (remaining != 0) {
-    final Uint8List keyStream = chacha20Block(key32Bit, counter + fullBlocks, nonce32Bit);
+    final Uint8List keyStream = chacha20Block(key32Bit, nonce32Bit, counter + fullBlocks);
     final int start = fullBlocks * 64;
     for (int i = 0; i < remaining; i++) {
       output[start + i] = data[start + i] ^ keyStream[i];
