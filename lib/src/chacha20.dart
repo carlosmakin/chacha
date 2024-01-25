@@ -31,85 +31,85 @@ void _chacha20BlockRounds(Uint32List state) {
     // Column rounds
 
     // Quarter round on (0, 4, 8, 12)
-    state[0] = state[0] + state[4];
+    state[0] += state[4];
     state[12] = _rotateLeft32By16(state[12] ^ state[0]);
-    state[8] = state[8] + state[12];
+    state[8] += state[12];
     state[4] = _rotateLeft32By12(state[4] ^ state[8]);
-    state[0] = state[0] + state[4];
+    state[0] += state[4];
     state[12] = _rotateLeft32By8(state[12] ^ state[0]);
-    state[8] = state[8] + state[12];
+    state[8] += state[12];
     state[4] = _rotateLeft32By7(state[4] ^ state[8]);
 
     // Quarter round on (1, 5, 9, 13)
-    state[1] = state[1] + state[5];
+    state[1] += state[5];
     state[13] = _rotateLeft32By16(state[13] ^ state[1]);
-    state[9] = state[9] + state[13];
+    state[9] += state[13];
     state[5] = _rotateLeft32By12(state[5] ^ state[9]);
-    state[1] = state[1] + state[5];
+    state[1] += state[5];
     state[13] = _rotateLeft32By8(state[13] ^ state[1]);
-    state[9] = state[9] + state[13];
+    state[9] += state[13];
     state[5] = _rotateLeft32By7(state[5] ^ state[9]);
 
     // Quarter round on (2, 6, 10, 14)
-    state[2] = state[2] + state[6];
+    state[2] += state[6];
     state[14] = _rotateLeft32By16(state[14] ^ state[2]);
-    state[10] = state[10] + state[14];
+    state[10] += state[14];
     state[6] = _rotateLeft32By12(state[6] ^ state[10]);
-    state[2] = state[2] + state[6];
+    state[2] += state[6];
     state[14] = _rotateLeft32By8(state[14] ^ state[2]);
-    state[10] = state[10] + state[14];
+    state[10] += state[14];
     state[6] = _rotateLeft32By7(state[6] ^ state[10]);
 
     // Quarter round on (3, 7, 11, 15)
-    state[3] = state[3] + state[7];
+    state[3] += state[7];
     state[15] = _rotateLeft32By16(state[15] ^ state[3]);
-    state[11] = state[11] + state[15];
+    state[11] += state[15];
     state[7] = _rotateLeft32By12(state[7] ^ state[11]);
-    state[3] = state[3] + state[7];
+    state[3] += state[7];
     state[15] = _rotateLeft32By8(state[15] ^ state[3]);
-    state[11] = state[11] + state[15];
+    state[11] += state[15];
     state[7] = _rotateLeft32By7(state[7] ^ state[11]);
 
     // Diagonal rounds
 
     // Quarter round on (0, 5, 10, 15)
-    state[0] = state[0] + state[5];
+    state[0] += state[5];
     state[15] = _rotateLeft32By16(state[15] ^ state[0]);
-    state[10] = state[10] + state[15];
+    state[10] += state[15];
     state[5] = _rotateLeft32By12(state[5] ^ state[10]);
-    state[0] = state[0] + state[5];
+    state[0] += state[5];
     state[15] = _rotateLeft32By8(state[15] ^ state[0]);
-    state[10] = state[10] + state[15];
+    state[10] += state[15];
     state[5] = _rotateLeft32By7(state[5] ^ state[10]);
 
     // Quarter round on (1, 6, 11, 12)
-    state[1] = state[1] + state[6];
+    state[1] += state[6];
     state[12] = _rotateLeft32By16(state[12] ^ state[1]);
-    state[11] = state[11] + state[12];
+    state[11] += state[12];
     state[6] = _rotateLeft32By12(state[6] ^ state[11]);
-    state[1] = state[1] + state[6];
+    state[1] += state[6];
     state[12] = _rotateLeft32By8(state[12] ^ state[1]);
-    state[11] = state[11] + state[12];
+    state[11] += state[12];
     state[6] = _rotateLeft32By7(state[6] ^ state[11]);
 
     // Quarter round on (2, 7, 8, 13)
-    state[2] = state[2] + state[7];
+    state[2] += state[7];
     state[13] = _rotateLeft32By16(state[13] ^ state[2]);
-    state[8] = state[8] + state[13];
+    state[8] += state[13];
     state[7] = _rotateLeft32By12(state[7] ^ state[8]);
-    state[2] = state[2] + state[7];
+    state[2] += state[7];
     state[13] = _rotateLeft32By8(state[13] ^ state[2]);
-    state[8] = state[8] + state[13];
+    state[8] += state[13];
     state[7] = _rotateLeft32By7(state[7] ^ state[8]);
 
     // Quarter round on (3, 4, 9, 14)
-    state[3] = state[3] + state[4];
+    state[3] += state[4];
     state[14] = _rotateLeft32By16(state[14] ^ state[3]);
-    state[9] = state[9] + state[14];
+    state[9] += state[14];
     state[4] = _rotateLeft32By12(state[4] ^ state[9]);
-    state[3] = state[3] + state[4];
+    state[3] += state[4];
     state[14] = _rotateLeft32By8(state[14] ^ state[3]);
-    state[9] = state[9] + state[14];
+    state[9] += state[14];
     state[4] = _rotateLeft32By7(state[4] ^ state[9]);
   }
 }
