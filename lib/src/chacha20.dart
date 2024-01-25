@@ -12,10 +12,10 @@ void _ensureLittleEndian(Uint32List list) {
 }
 
 /// Rotates the left bits of a 32-bit unsigned integer.
-int _rotateLeft32By16(int value) => (value << 16) | (value >> 16);
-int _rotateLeft32By12(int value) => (value << 12) | (value >> 20);
-int _rotateLeft32By8(int value) => (value << 8) | (value >> 24);
-int _rotateLeft32By7(int value) => (value << 7) | (value >> 25);
+int _rotateLeft32By16(int value) => (0xFFFFFFFF & (value << 16)) | (value >> 16);
+int _rotateLeft32By12(int value) => (0xFFFFFFFF & (value << 12)) | (value >> 20);
+int _rotateLeft32By8(int value) => (0xFFFFFFFF & (value << 8)) | (value >> 24);
+int _rotateLeft32By7(int value) => (0xFFFFFFFF & (value << 7)) | (value >> 25);
 
 /// Performs the core rounds of the ChaCha20 block cipher.
 ///
@@ -27,91 +27,126 @@ int _rotateLeft32By7(int value) => (value << 7) | (value >> 25);
 /// "column rounds" followed by "diagonal rounds." Each round updates the state
 /// using modular addition, bitwise XOR, and left rotation operations.
 void _chacha20BlockRounds(Uint32List state) {
+  int s0 = state[0];
+  int s1 = state[1];
+  int s2 = state[2];
+  int s3 = state[3];
+  int s4 = state[4];
+  int s5 = state[5];
+  int s6 = state[6];
+  int s7 = state[7];
+  int s8 = state[8];
+  int s9 = state[9];
+  int s10 = state[10];
+  int s11 = state[11];
+  int s12 = state[12];
+  int s13 = state[13];
+  int s14 = state[14];
+  int s15 = state[15];
+
   for (int i = 0; i < 10; i++) {
     // Column rounds
 
     // Quarter round on (0, 4, 8, 12)
-    state[0] += state[4];
-    state[12] = _rotateLeft32By16(state[12] ^ state[0]);
-    state[8] += state[12];
-    state[4] = _rotateLeft32By12(state[4] ^ state[8]);
-    state[0] += state[4];
-    state[12] = _rotateLeft32By8(state[12] ^ state[0]);
-    state[8] += state[12];
-    state[4] = _rotateLeft32By7(state[4] ^ state[8]);
+    s0 = 0xFFFFFFFF & (s0 + s4);
+    s12 = _rotateLeft32By16(s12 ^ s0);
+    s8 = 0xFFFFFFFF & (s8 + s12);
+    s4 = _rotateLeft32By12(s4 ^ s8);
+    s0 = 0xFFFFFFFF & (s0 + s4);
+    s12 = _rotateLeft32By8(s12 ^ s0);
+    s8 = 0xFFFFFFFF & (s8 + s12);
+    s4 = _rotateLeft32By7(s4 ^ s8);
 
     // Quarter round on (1, 5, 9, 13)
-    state[1] += state[5];
-    state[13] = _rotateLeft32By16(state[13] ^ state[1]);
-    state[9] += state[13];
-    state[5] = _rotateLeft32By12(state[5] ^ state[9]);
-    state[1] += state[5];
-    state[13] = _rotateLeft32By8(state[13] ^ state[1]);
-    state[9] += state[13];
-    state[5] = _rotateLeft32By7(state[5] ^ state[9]);
+    s1 = 0xFFFFFFFF & (s1 + s5);
+    s13 = _rotateLeft32By16(s13 ^ s1);
+    s9 = 0xFFFFFFFF & (s9 + s13);
+    s5 = _rotateLeft32By12(s5 ^ s9);
+    s1 = 0xFFFFFFFF & (s1 + s5);
+    s13 = _rotateLeft32By8(s13 ^ s1);
+    s9 = 0xFFFFFFFF & (s9 + s13);
+    s5 = _rotateLeft32By7(s5 ^ s9);
 
     // Quarter round on (2, 6, 10, 14)
-    state[2] += state[6];
-    state[14] = _rotateLeft32By16(state[14] ^ state[2]);
-    state[10] += state[14];
-    state[6] = _rotateLeft32By12(state[6] ^ state[10]);
-    state[2] += state[6];
-    state[14] = _rotateLeft32By8(state[14] ^ state[2]);
-    state[10] += state[14];
-    state[6] = _rotateLeft32By7(state[6] ^ state[10]);
+    s2 = 0xFFFFFFFF & (s2 + s6);
+    s14 = _rotateLeft32By16(s14 ^ s2);
+    s10 = 0xFFFFFFFF & (s10 + s14);
+    s6 = _rotateLeft32By12(s6 ^ s10);
+    s2 = 0xFFFFFFFF & (s2 + s6);
+    s14 = _rotateLeft32By8(s14 ^ s2);
+    s10 = 0xFFFFFFFF & (s10 + s14);
+    s6 = _rotateLeft32By7(s6 ^ s10);
 
     // Quarter round on (3, 7, 11, 15)
-    state[3] += state[7];
-    state[15] = _rotateLeft32By16(state[15] ^ state[3]);
-    state[11] += state[15];
-    state[7] = _rotateLeft32By12(state[7] ^ state[11]);
-    state[3] += state[7];
-    state[15] = _rotateLeft32By8(state[15] ^ state[3]);
-    state[11] += state[15];
-    state[7] = _rotateLeft32By7(state[7] ^ state[11]);
+    s3 = 0xFFFFFFFF & (s3 + s7);
+    s15 = _rotateLeft32By16(s15 ^ s3);
+    s11 = 0xFFFFFFFF & (s11 + s15);
+    s7 = _rotateLeft32By12(s7 ^ s11);
+    s3 = 0xFFFFFFFF & (s3 + s7);
+    s15 = _rotateLeft32By8(s15 ^ s3);
+    s11 = 0xFFFFFFFF & (s11 + s15);
+    s7 = _rotateLeft32By7(s7 ^ s11);
 
     // Diagonal rounds
 
     // Quarter round on (0, 5, 10, 15)
-    state[0] += state[5];
-    state[15] = _rotateLeft32By16(state[15] ^ state[0]);
-    state[10] += state[15];
-    state[5] = _rotateLeft32By12(state[5] ^ state[10]);
-    state[0] += state[5];
-    state[15] = _rotateLeft32By8(state[15] ^ state[0]);
-    state[10] += state[15];
-    state[5] = _rotateLeft32By7(state[5] ^ state[10]);
+    s0 = 0xFFFFFFFF & (s0 + s5);
+    s15 = _rotateLeft32By16(s15 ^ s0);
+    s10 = 0xFFFFFFFF & (s10 + s15);
+    s5 = _rotateLeft32By12(s5 ^ s10);
+    s0 = 0xFFFFFFFF & (s0 + s5);
+    s15 = _rotateLeft32By8(s15 ^ s0);
+    s10 = 0xFFFFFFFF & (s10 + s15);
+    s5 = _rotateLeft32By7(s5 ^ s10);
 
     // Quarter round on (1, 6, 11, 12)
-    state[1] += state[6];
-    state[12] = _rotateLeft32By16(state[12] ^ state[1]);
-    state[11] += state[12];
-    state[6] = _rotateLeft32By12(state[6] ^ state[11]);
-    state[1] += state[6];
-    state[12] = _rotateLeft32By8(state[12] ^ state[1]);
-    state[11] += state[12];
-    state[6] = _rotateLeft32By7(state[6] ^ state[11]);
+    s1 = 0xFFFFFFFF & (s1 + s6);
+    s12 = _rotateLeft32By16(s12 ^ s1);
+    s11 = 0xFFFFFFFF & (s11 + s12);
+    s6 = _rotateLeft32By12(s6 ^ s11);
+    s1 = 0xFFFFFFFF & (s1 + s6);
+    s12 = _rotateLeft32By8(s12 ^ s1);
+    s11 = 0xFFFFFFFF & (s11 + s12);
+    s6 = _rotateLeft32By7(s6 ^ s11);
 
     // Quarter round on (2, 7, 8, 13)
-    state[2] += state[7];
-    state[13] = _rotateLeft32By16(state[13] ^ state[2]);
-    state[8] += state[13];
-    state[7] = _rotateLeft32By12(state[7] ^ state[8]);
-    state[2] += state[7];
-    state[13] = _rotateLeft32By8(state[13] ^ state[2]);
-    state[8] += state[13];
-    state[7] = _rotateLeft32By7(state[7] ^ state[8]);
+    s2 = 0xFFFFFFFF & (s2 + s7);
+    s13 = _rotateLeft32By16(s13 ^ s2);
+    s8 = 0xFFFFFFFF & (s8 + s13);
+    s7 = _rotateLeft32By12(s7 ^ s8);
+    s2 = 0xFFFFFFFF & (s2 + s7);
+    s13 = _rotateLeft32By8(s13 ^ s2);
+    s8 = 0xFFFFFFFF & (s8 + s13);
+    s7 = _rotateLeft32By7(s7 ^ s8);
 
     // Quarter round on (3, 4, 9, 14)
-    state[3] += state[4];
-    state[14] = _rotateLeft32By16(state[14] ^ state[3]);
-    state[9] += state[14];
-    state[4] = _rotateLeft32By12(state[4] ^ state[9]);
-    state[3] += state[4];
-    state[14] = _rotateLeft32By8(state[14] ^ state[3]);
-    state[9] += state[14];
-    state[4] = _rotateLeft32By7(state[4] ^ state[9]);
+    s3 = 0xFFFFFFFF & (s3 + s4);
+    s14 = _rotateLeft32By16(s14 ^ s3);
+    s9 = 0xFFFFFFFF & (s9 + s14);
+    s4 = _rotateLeft32By12(s4 ^ s9);
+    s3 = 0xFFFFFFFF & (s3 + s4);
+    s14 = _rotateLeft32By8(s14 ^ s3);
+    s9 = 0xFFFFFFFF & (s9 + s14);
+    s4 = _rotateLeft32By7(s4 ^ s9);
   }
+
+  // Save local variables back to state
+  state[0] = s0;
+  state[1] = s1;
+  state[2] = s2;
+  state[3] = s3;
+  state[4] = s4;
+  state[5] = s5;
+  state[6] = s6;
+  state[7] = s7;
+  state[8] = s8;
+  state[9] = s9;
+  state[10] = s10;
+  state[11] = s11;
+  state[12] = s12;
+  state[13] = s13;
+  state[14] = s14;
+  state[15] = s15;
 }
 
 /// The ChaCha20 block function is the core of the ChaCha20 algorithm.
