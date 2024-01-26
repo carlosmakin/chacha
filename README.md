@@ -49,11 +49,6 @@ ChaCha20-Poly1305 AEAD combines the strengths of ChaCha20 and Poly1305, encrypti
 
 Developed by Daniel J. Bernstein, ChaCha20 is an evolution of the earlier Salsa20 cipher. It was designed to provide strong cryptographic security while being highly efficient in software implementations.
 
-#### Why ChaCha20:
-- **Performance Needs**: Addresses the demand for a high-speed, secure stream cipher.
-- **Simplicity and Security**: Offers a streamlined design while enhancing security aspects.
-- **Versatility**: Ideal for both software and hardware implementations.
-
 ### Poly1305
 
 Also developed by Daniel J. Bernstein, Poly1305 provides a way to authenticate messages securely and is often used in combination with ciphers like ChaCha20.
