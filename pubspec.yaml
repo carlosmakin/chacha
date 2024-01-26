@@ -1,7 +1,7 @@
 name: chacha
 description: An implementation of the ChaCha20 cipher, Poly1305 MAC, and ChaCha20-Poly1305 AEAD as per RFC 8439.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/carlosmakin/chacha
 
 environment:
   sdk: ^3.2.5
