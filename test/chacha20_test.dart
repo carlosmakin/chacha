@@ -4,11 +4,11 @@ import 'package:test/test.dart';
 
 import 'test_parser.dart';
 
-typedef Chacha20TestVector = Map<String, dynamic>;
+typedef ChaCha20TestVector = Map<String, dynamic>;
 
 void main() {
   for (int i = 0; i < chaha20BlockTestVectors.length; i++) {
-    final Chacha20TestVector testVector = chaha20BlockTestVectors[i];
+    final ChaCha20TestVector testVector = chaha20BlockTestVectors[i];
     test('The ChaCha20 Block Functions Test Vector ${(i + 1)}', () {
       final Uint32List key = parseBlockHexString(testVector['key']!).buffer.asUint32List();
       final Uint32List nonce = parseBlockHexString(testVector['nonce']!).buffer.asUint32List();
@@ -23,14 +23,14 @@ void main() {
   }
 
   for (int i = 0; i < chaha20EncryptionTestVectors.length; i++) {
-    final Chacha20TestVector testVector = chaha20EncryptionTestVectors[i];
+    final ChaCha20TestVector testVector = chaha20EncryptionTestVectors[i];
     test('The ChaCha20 Encryption Test Vector ${(i + 1)}', () {
       final Uint8List key = parseBlockHexString(testVector['key']!);
       final Uint8List nonce = parseBlockHexString(testVector['nonce']!);
       final Uint8List plaintext = parseBlockHexString(testVector['plaintext']!);
       final int counter = testVector['counter']!;
 
-      final Uint8List result = Chacha20.encrypt(key, nonce, plaintext, counter);
+      final Uint8List result = ChaCha20.encrypt(key, nonce, plaintext, counter);
       final Uint8List expected = parseBlockHexString(testVector['ciphertext']!);
 
       expect(plaintext.length, equals(result.length));
@@ -40,7 +40,7 @@ void main() {
   }
 }
 
-const List<Chacha20TestVector> chaha20BlockTestVectors = <Chacha20TestVector>[
+const List<ChaCha20TestVector> chaha20BlockTestVectors = <ChaCha20TestVector>[
   // Test Vector #1
   <String, dynamic>{
     'key': '''
@@ -118,7 +118,7 @@ const List<Chacha20TestVector> chaha20BlockTestVectors = <Chacha20TestVector>[
   },
 ];
 
-const List<Chacha20TestVector> chaha20EncryptionTestVectors = <Chacha20TestVector>[
+const List<ChaCha20TestVector> chaha20EncryptionTestVectors = <ChaCha20TestVector>[
   // Test Vector #0
   <String, dynamic>{
     'key': '''

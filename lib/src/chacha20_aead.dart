@@ -35,7 +35,7 @@ Uint8List _buildMacData(Uint8List bytes, Uint8List? aad) {
 /// Combining ChaCha20 cipher and Poly1305 MAC, this class offers symmetric encryption ensuring
 /// data confidentiality, integrity, and authenticity. It is optimal for high-security and
 /// high-performance environments in symmetric data encryption and authentication.
-abstract class Chacha20Poly1305 {
+abstract class ChaCha20Poly1305 {
   /// Generates a Poly1305 key using the ChaCha20 block function with a zero counter as per RFC 8439.
   ///
   /// Accepts a 256-bit key and a 96-bit nonce.
@@ -51,7 +51,7 @@ abstract class Chacha20Poly1305 {
     final Uint8List otk = generateKey(key, nonce);
 
     // Encrypt the data using ChaCha20
-    final Uint8List ciphertext = Chacha20.encrypt(key, nonce, data, 1);
+    final Uint8List ciphertext = ChaCha20.encrypt(key, nonce, data, 1);
 
     // Create the Poly1305 message for MAC tag calculation
     final Uint8List macData = _buildMacData(ciphertext, aad);
@@ -92,6 +92,6 @@ abstract class Chacha20Poly1305 {
     }
 
     // Decrypt the data using ChaCha20
-    return Chacha20.decrypt(key, nonce, ciphertext);
+    return ChaCha20.decrypt(key, nonce, ciphertext);
   }
 }

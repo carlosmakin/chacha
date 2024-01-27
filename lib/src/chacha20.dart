@@ -236,7 +236,7 @@ Uint8List _chacha20(Uint8List key, Uint8List nonce, Uint8List data, [int counter
 ///
 /// Offers high-performance symmetric key cryptography, with a 256-bit key and 96-bit nonce, and
 /// optional counters. Ideally suited for fast and secure encryption in various applications.
-abstract class Chacha20 {
+abstract class ChaCha20 {
   /// Encrypts data using ChaCha20 as per RFC 8439.
   ///
   /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default is 1).
