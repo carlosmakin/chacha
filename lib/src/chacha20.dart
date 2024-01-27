@@ -199,7 +199,7 @@ Uint8List chacha20Block(Uint32List key, Uint32List nonce, int counter) {
 
 /// Encrypts or decrypts data using ChaCha20 algorithm, configurable for both encryption and decryption.
 /// Accepts a 256-bit key, a 96-bit nonce, data, and an optional counter (default is 1).
-Uint8List chacha20(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
+Uint8List _chacha20(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
   if (key.length != 32) throw ArgumentError('Invalid key');
   if (nonce.length != 12) throw ArgumentError('Invalid nonce');
   if (data.length >= 274877906880) throw ArgumentError('Maximum size reached');
@@ -230,4 +230,24 @@ Uint8List chacha20(Uint8List key, Uint8List nonce, Uint8List data, [int counter 
   }
 
   return output;
+}
+
+/// ChaCha20 stream cipher as defined in RFC 8439.
+///
+/// Offers high-performance symmetric key cryptography, with a 256-bit key and 96-bit nonce, and
+/// optional counters. Ideally suited for fast and secure encryption in various applications.
+abstract class Chacha20 {
+  /// Encrypts data using ChaCha20 as per RFC 8439.
+  ///
+  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default is 1).
+  static encrypt(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
+    return _chacha20(key, nonce, data, counter);
+  }
+
+  /// Decrypts data using ChaCha20 as per RFC 8439.
+  ///
+  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default is 1).
+  static decrypt(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
+    return _chacha20(key, nonce, data, counter);
+  }
 }
