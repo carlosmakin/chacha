@@ -30,7 +30,7 @@ void main() {
       final Uint8List plaintext = parseBlockHexString(testVector['plaintext']!);
       final int counter = testVector['counter']!;
 
-      final Uint8List result = chacha20(key, nonce, plaintext, counter);
+      final Uint8List result = Chacha20.encrypt(key, nonce, plaintext, counter);
       final Uint8List expected = parseBlockHexString(testVector['ciphertext']!);
 
       expect(plaintext.length, equals(result.length));
