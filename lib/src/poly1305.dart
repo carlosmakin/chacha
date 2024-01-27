@@ -51,9 +51,15 @@ void _clamp(Uint8List r) {
   r[12] &= 252;
 }
 
-/// Poly1305 class for implementing Poly1305 MAC (Message Authentication Code) as per RFC 8439.
+/// Poly1305 Message Authentication Code (MAC) as defined in RFC 8439.
+///
+/// Poly1305 is a high-speed MAC algorithm that provides message integrity and authenticity.
+/// This class facilitates the generation of MACs with a 256-bit key, ensuring robust protection 
+/// against message tampering in secure communications.
 abstract final base class Poly1305 {
-  /// Generates a Poly1305 Message Authentication Code (MAC) for message integrity and authenticity.
+  /// Generates a Poly1305 Message Authentication Code (MAC) as per RFC 8439.
+  /// 
+  /// Accepts a 256-bit key for message integrity and authenticity.
   static Uint8List computeMac(Uint8List key, Uint8List msg) {
     if (key.length < 16) throw ArgumentError('Invalid key');
 
