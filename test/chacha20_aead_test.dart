@@ -13,7 +13,7 @@ void main() {
       final Uint8List key = parseBlockHexString(testVector['key']!);
       final Uint8List nonce = parseBlockHexString(testVector['nonce']!);
 
-      final Uint8List result = poly1305KeyGen(key, nonce);
+      final Uint8List result = Chacha20Poly1305.generateKey(key, nonce);
       final Uint8List expected = parseBlockHexString(testVector['otk']!);
 
       expect(result, equals(expected));
@@ -28,7 +28,7 @@ void main() {
       final Uint8List data = parseBlockHexString(testVector['plaintext']!);
       final Uint8List aad = parseBlockHexString(testVector['aad']!);
 
-      final Uint8List result = chacha20Poly1305Encrypt(key, nonce, data, aad);
+      final Uint8List result = Chacha20Poly1305.encrypt(key, nonce, data, aad);
 
       final Uint8List ciphertext1 = Uint8List.view(result.buffer, 0, result.length - 16);
       final Uint8List expectedCiphertext = parseBlockHexString(testVector['ciphertext']!);
