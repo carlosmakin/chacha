@@ -55,7 +55,7 @@ Uint8List chacha20Poly1305Encrypt(
   final Uint8List macData = _buildMacData(ciphertext, aad);
 
   // Calculate the MAC tag using Poly1305
-  final Uint8List tag = poly1305Mac(otk, macData);
+  final Uint8List tag = Poly1305.computeMac(otk, macData);
 
   // The output from the AEAD is the concatenation of:
   // - A ciphertext of the same length as the plaintext
@@ -88,7 +88,7 @@ Uint8List chacha20Poly1305Decrypt(
   final Uint8List macData = _buildMacData(ciphertext, aad);
 
   // Calculate and verify the MAC tag
-  if (!secureEquals(tag, poly1305Mac(otk, macData))) {
+  if (!secureEquals(tag, Poly1305.computeMac(otk, macData))) {
     throw Exception('MAC verification failed.');
   }
 

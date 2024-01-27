@@ -51,52 +51,55 @@ void _clamp(Uint8List r) {
   r[12] &= 252;
 }
 
-/// Poly1305 MAC function algorithm as specified in RFC 8439.
-Uint8List poly1305Mac(Uint8List key, Uint8List msg) {
-  if (key.length < 16) throw ArgumentError('Invalid key');
+/// Poly1305 class for implementing Poly1305 MAC (Message Authentication Code) as per RFC 8439.
+abstract final base class Poly1305 {
+  /// Generates a Poly1305 Message Authentication Code (MAC) for message integrity and authenticity.
+  static Uint8List computeMac(Uint8List key, Uint8List msg) {
+    if (key.length < 16) throw ArgumentError('Invalid key');
 
-  final Uint8List rBytes = key.sublist(0, 16);
-  _clamp(rBytes);
+    final Uint8List rBytes = key.sublist(0, 16);
+    _clamp(rBytes);
 
-  final BigInt r = _leBytesToBigInt(rBytes);
-  final BigInt s = _leBytesToBigInt(key.sublist(16, 32));
+    final BigInt r = _leBytesToBigInt(rBytes);
+    final BigInt s = _leBytesToBigInt(key.sublist(16, 32));
 
-  BigInt accumulator = BigInt.zero;
-  final BigInt p = (BigInt.one << 130) - BigInt.from(5); // 2^130 - 5
+    BigInt accumulator = BigInt.zero;
+    final BigInt p = (BigInt.one << 130) - BigInt.from(5); // 2^130 - 5
 
-  // Preallocate buffer for performance
-  final Uint8List block = Uint8List(17);
-  block[16] = 1; // Add one bit beyond the number of bytes for all full blocks
+    // Preallocate buffer for performance
+    final Uint8List block = Uint8List(17);
+    block[16] = 1; // Add one bit beyond the number of bytes for all full blocks
 
-  // Process all full 16-byte blocks
-  final int fullBlockEnd = msg.length - (msg.length % 16);
-  for (int i = 0; i < fullBlockEnd; i += 16) {
-    for (int j = 0; j < 16; j++) {
-      block[j] = msg[i + j];
+    // Process all full 16-byte blocks
+    final int fullBlockEnd = msg.length - (msg.length % 16);
+    for (int i = 0; i < fullBlockEnd; i += 16) {
+      for (int j = 0; j < 16; j++) {
+        block[j] = msg[i + j];
+      }
+      final BigInt n = _leBytesToBigInt(block);
+      accumulator = (accumulator + n) * r % p;
     }
-    final BigInt n = _leBytesToBigInt(block);
-    accumulator = (accumulator + n) * r % p;
-  }
 
-  // Process the final block, if there is any remainder
-  if (fullBlockEnd < msg.length) {
-    final int finalBlockLen = msg.length - fullBlockEnd;
-    for (int j = 0; j < finalBlockLen; j++) {
-      block[j] = msg[fullBlockEnd + j];
+    // Process the final block, if there is any remainder
+    if (fullBlockEnd < msg.length) {
+      final int finalBlockLen = msg.length - fullBlockEnd;
+      for (int j = 0; j < finalBlockLen; j++) {
+        block[j] = msg[fullBlockEnd + j];
+      }
+      block[finalBlockLen] = 1;
+      for (int j = finalBlockLen + 1; j < 17; j++) {
+        block[j] = 0;
+      }
+      final BigInt n = _leBytesToBigInt(block);
+      accumulator = (accumulator + n) * r % p;
     }
-    block[finalBlockLen] = 1;
-    for (int j = finalBlockLen + 1; j < 17; j++) {
+
+    // Zero out the block for security
+    for (int j = 0; j < 17; j++) {
       block[j] = 0;
     }
-    final BigInt n = _leBytesToBigInt(block);
-    accumulator = (accumulator + n) * r % p;
-  }
 
-  // Zero out the block for security
-  for (int j = 0; j < 17; j++) {
-    block[j] = 0;
+    accumulator = (accumulator + s) % p;
+    return _bigIntTo16LeBytes(accumulator);
   }
-
-  accumulator = (accumulator + s) % p;
-  return _bigIntTo16LeBytes(accumulator);
 }
