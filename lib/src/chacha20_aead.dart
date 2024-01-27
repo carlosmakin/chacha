@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:chacha/src/chacha20.dart';
 import 'package:chacha/src/poly1305.dart';
-import 'package:chacha/utilities/secure_equality.dart';
 
 Uint8List _buildMacData(Uint8List bytes, Uint8List? aad) {
   aad ??= Uint8List(0);
@@ -29,6 +28,25 @@ Uint8List _buildMacData(Uint8List bytes, Uint8List? aad) {
   );
 
   return macData;
+}
+
+/// Compares two lists of integers (`left` and `right`) for equality in a constant-time manner.
+/// This approach mitigates timing attacks in cryptographic contexts by ensuring the
+/// execution time depends only on the length of the lists, not the data they contain.
+///
+/// Returns `true` if the lists are equal, `false` otherwise.
+bool _secureEquals(List<int> left, List<int> right) {
+  // Return false immediately if lengths differ, as the lists can't be equal.
+  if (left.length != right.length) return false;
+
+  int result = 0;
+  // Compare elements using XOR; accumulate any differences in `result`.
+  for (int i = 0; i < left.length; i++) {
+    result |= (left[i] ^ right[i]);
+  }
+
+  // If `result` is 0, all elements matched; otherwise, at least one pair differed.
+  return result == 0;
 }
 
 /// ChaCha20-Poly1305 Authenticated Encryption with Associated Data (AEAD) as defined in RFC 8439.
@@ -88,7 +106,7 @@ abstract class Chacha20Poly1305 {
     final Uint8List macData = _buildMacData(ciphertext, aad);
 
     // Calculate and verify the MAC tag
-    if (!secureEquals(tag, Poly1305.computeMac(otk, macData))) {
+    if (!_secureEquals(tag, Poly1305.computeMac(otk, macData))) {
       throw Exception('MAC verification failed.');
     }
 
