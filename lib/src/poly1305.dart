@@ -54,13 +54,33 @@ void _clamp(Uint8List r) {
 /// Poly1305 Message Authentication Code (MAC) as defined in RFC 8439.
 ///
 /// Poly1305 is a high-speed MAC algorithm that provides message integrity and authenticity.
-/// This class facilitates the generation of MACs with a 256-bit key, ensuring robust protection 
+/// This class facilitates the generation of MACs with a 256-bit key, ensuring robust protection
 /// against message tampering in secure communications.
-abstract final base class Poly1305 {
+abstract class Poly1305 {
+  /// Verifies the integrity and authenticity of a message using its Poly1305 MAC.
+  ///
+  /// Accepts the key used to generate the MAC, the message, and the MAC to be verified.
+  /// Use this to prevent timing attacks during MAC verification.
+  static bool verifyMac(Uint8List key, Uint8List message, Uint8List mac) {
+    final Uint8List computedMac = computeMac(key, message);
+
+    // Return false immediately if lengths differ, as the lists can't be equal.
+    if (computedMac.length != mac.length) return false;
+
+    int result = 0;
+    // Compare elements using XOR; accumulate any differences in `result`.
+    for (int i = 0; i < computedMac.length; i++) {
+      result |= (computedMac[i] ^ mac[i]);
+    }
+
+    // If `result` is 0, all elements matched; otherwise, at least one pair differed.
+    return result == 0;
+  }
+
   /// Generates a Poly1305 Message Authentication Code (MAC) as per RFC 8439.
-  /// 
+  ///
   /// Accepts a 256-bit key for message integrity and authenticity.
-  static Uint8List computeMac(Uint8List key, Uint8List msg) {
+  static Uint8List computeMac(Uint8List key, Uint8List message) {
     if (key.length < 16) throw ArgumentError('Invalid key');
 
     final Uint8List rBytes = key.sublist(0, 16);
@@ -77,20 +97,20 @@ abstract final base class Poly1305 {
     block[16] = 1; // Add one bit beyond the number of bytes for all full blocks
 
     // Process all full 16-byte blocks
-    final int fullBlockEnd = msg.length - (msg.length % 16);
+    final int fullBlockEnd = message.length - (message.length % 16);
     for (int i = 0; i < fullBlockEnd; i += 16) {
       for (int j = 0; j < 16; j++) {
-        block[j] = msg[i + j];
+        block[j] = message[i + j];
       }
       final BigInt n = _leBytesToBigInt(block);
       accumulator = (accumulator + n) * r % p;
     }
 
     // Process the final block, if there is any remainder
-    if (fullBlockEnd < msg.length) {
-      final int finalBlockLen = msg.length - fullBlockEnd;
+    if (fullBlockEnd < message.length) {
+      final int finalBlockLen = message.length - fullBlockEnd;
       for (int j = 0; j < finalBlockLen; j++) {
-        block[j] = msg[fullBlockEnd + j];
+        block[j] = message[fullBlockEnd + j];
       }
       block[finalBlockLen] = 1;
       for (int j = finalBlockLen + 1; j < 17; j++) {
