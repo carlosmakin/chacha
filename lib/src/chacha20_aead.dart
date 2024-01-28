@@ -3,33 +3,6 @@ import 'dart:typed_data';
 import 'package:chacha/src/chacha20.dart';
 import 'package:chacha/src/poly1305.dart';
 
-Uint8List _buildMacData(Uint8List bytes, Uint8List? aad) {
-  aad ??= Uint8List(0);
-
-  final int byteLen = bytes.length;
-  final int bytePadLen = (16 - (byteLen % 16)) % 16;
-
-  final int aadLen = aad.length;
-  final int aadPadLen = (16 - (aadLen % 16)) % 16;
-
-  final Uint8List macData = Uint8List(
-    (aadLen + aadPadLen) + (byteLen + bytePadLen) + 16,
-  );
-
-  macData.setAll(0, aad);
-  macData.setAll((aadLen + aadPadLen), bytes);
-  macData.setAll(
-    (aadLen + aadPadLen) + (byteLen + bytePadLen),
-    (ByteData(16)
-          ..setUint64(0, aadLen, Endian.little)
-          ..setUint64(8, byteLen, Endian.little))
-        .buffer
-        .asUint8List(),
-  );
-
-  return macData;
-}
-
 /// ChaCha20-Poly1305 Authenticated Encryption with Associated Data (AEAD) as defined in RFC 8439.
 ///
 /// Combining ChaCha20 cipher and Poly1305 MAC, this class offers symmetric encryption ensuring
@@ -94,4 +67,31 @@ abstract class ChaCha20Poly1305 {
     // Decrypt the data using ChaCha20
     return ChaCha20.decrypt(key, nonce, ciphertext);
   }
+}
+
+Uint8List _buildMacData(Uint8List bytes, Uint8List? aad) {
+  aad ??= Uint8List(0);
+
+  final int byteLen = bytes.length;
+  final int bytePadLen = (16 - (byteLen % 16)) % 16;
+
+  final int aadLen = aad.length;
+  final int aadPadLen = (16 - (aadLen % 16)) % 16;
+
+  final Uint8List macData = Uint8List(
+    (aadLen + aadPadLen) + (byteLen + bytePadLen) + 16,
+  );
+
+  macData.setAll(0, aad);
+  macData.setAll((aadLen + aadPadLen), bytes);
+  macData.setAll(
+    (aadLen + aadPadLen) + (byteLen + bytePadLen),
+    (ByteData(16)
+          ..setUint64(0, aadLen, Endian.little)
+          ..setUint64(8, byteLen, Endian.little))
+        .buffer
+        .asUint8List(),
+  );
+
+  return macData;
 }

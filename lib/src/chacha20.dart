@@ -1,5 +1,108 @@
 import 'dart:typed_data';
 
+/// ChaCha20 stream cipher as defined in RFC 8439.
+///
+/// Offers high-performance symmetric key cryptography, with a 256-bit key and 96-bit nonce, and
+/// optional counters. Ideally suited for fast and secure encryption in various applications.
+abstract class ChaCha20 {
+  /// Encrypts data using ChaCha20 as per RFC 8439.
+  ///
+  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default is 1).
+  static encrypt(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
+    return _chacha20(key, nonce, data, counter);
+  }
+
+  /// Decrypts data using ChaCha20 as per RFC 8439.
+  ///
+  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default is 1).
+  static decrypt(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
+    return _chacha20(key, nonce, data, counter);
+  }
+}
+
+/// Encrypts or decrypts data using ChaCha20 algorithm, configurable for both encryption and decryption.
+/// Accepts a 256-bit key, a 96-bit nonce, data, and an optional counter (default is 1).
+Uint8List _chacha20(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
+  if (key.length != 32) throw ArgumentError('Invalid key');
+  if (nonce.length != 12) throw ArgumentError('Invalid nonce');
+  if (data.length >= 274877906880) throw ArgumentError('Maximum size reached');
+
+  final int dataSize = data.lengthInBytes;
+  final Uint8List output = Uint8List(dataSize);
+
+  final Uint32List key32Bit = Uint32List.view(key.buffer);
+  final Uint32List nonce32Bit = Uint32List.view(nonce.buffer);
+
+  // Encrypt each full block
+  final int fullBlocks = dataSize ~/ 64;
+  for (int j = 0; j < fullBlocks; j++) {
+    final Uint8List keyStream = chacha20Block(key32Bit, nonce32Bit, counter + j);
+    for (int i = 0; i < 64; i++) {
+      output[j * 64 + i] = data[j * 64 + i] ^ keyStream[i];
+    }
+  }
+
+  // Handle any remaining partial block
+  final int remaining = dataSize % 64;
+  if (remaining != 0) {
+    final Uint8List keyStream = chacha20Block(key32Bit, nonce32Bit, counter + fullBlocks);
+    final int start = fullBlocks * 64;
+    for (int i = 0; i < remaining; i++) {
+      output[start + i] = data[start + i] ^ keyStream[i];
+    }
+  }
+
+  return output;
+}
+
+/// The ChaCha20 block function is the core of the ChaCha20 algorithm.
+/// The function transforms a ChaCha state by running multiple quarter rounds.
+///
+/// The inputs to ChaCha20 are:
+///
+/// - A 256-bit key, treated as a concatenation of eight 32-bit little-endian integers.
+/// - A 96-bit nonce, treated as a concatenation of three 32-bit little-endian integers
+/// - A 32-bit block count parameter, treated as a 32-bit little-endian integer.
+///
+///The output is 64 random-looking bytes.
+Uint8List chacha20Block(Uint32List key, Uint32List nonce, int counter) {
+  // Initialize the state with the constants, key, counter, and nonce
+  final Uint32List state = Uint32List(16);
+
+  state[0] = 0x61707865;
+  state[1] = 0x3320646e;
+  state[2] = 0x79622d32;
+  state[3] = 0x6b206574;
+  state[4] = key[0];
+  state[5] = key[1];
+  state[6] = key[2];
+  state[7] = key[3];
+  state[8] = key[4];
+  state[9] = key[5];
+  state[10] = key[6];
+  state[11] = key[7];
+  state[12] = counter;
+  state[13] = nonce[0];
+  state[14] = nonce[1];
+  state[15] = nonce[2];
+
+  // Flip endianness only if the system is big-endian
+  _ensureLittleEndian(state);
+
+  // Initialize working state
+  final Uint32List workingState = Uint32List.fromList(state);
+
+  // Perform block function
+  _chacha20BlockRounds(workingState);
+
+  // Add the original state to the working state
+  for (int i = 0; i < 16; i++) {
+    workingState[i] += state[i];
+  }
+
+  return workingState.buffer.asUint8List();
+}
+
 /// Ensures that the elements of the given `Uint32List` are in little-endian format.
 /// If the host system is big-endian, this function flips the endianness of each element.
 void _ensureLittleEndian(Uint32List list) {
@@ -10,12 +113,6 @@ void _ensureLittleEndian(Uint32List list) {
     list[i] = byteData.getUint32(i * 4, Endian.little);
   }
 }
-
-/// Rotates the left bits of a 32-bit unsigned integer.
-int _rotateLeft32By16(int value) => (0xFFFFFFFF & (value << 16)) | (value >> 16);
-int _rotateLeft32By12(int value) => (0xFFFFFFFF & (value << 12)) | (value >> 20);
-int _rotateLeft32By8(int value) => (0xFFFFFFFF & (value << 8)) | (value >> 24);
-int _rotateLeft32By7(int value) => (0xFFFFFFFF & (value << 7)) | (value >> 25);
 
 /// Performs the core rounds of the ChaCha20 block cipher.
 ///
@@ -149,105 +246,8 @@ void _chacha20BlockRounds(Uint32List state) {
   state[15] = s15;
 }
 
-/// The ChaCha20 block function is the core of the ChaCha20 algorithm.
-/// The function transforms a ChaCha state by running multiple quarter rounds.
-///
-/// The inputs to ChaCha20 are:
-///
-/// - A 256-bit key, treated as a concatenation of eight 32-bit little-endian integers.
-/// - A 96-bit nonce, treated as a concatenation of three 32-bit little-endian integers
-/// - A 32-bit block count parameter, treated as a 32-bit little-endian integer.
-///
-///The output is 64 random-looking bytes.
-Uint8List chacha20Block(Uint32List key, Uint32List nonce, int counter) {
-  // Initialize the state with the constants, key, counter, and nonce
-  final Uint32List state = Uint32List(16);
-
-  state[0] = 0x61707865;
-  state[1] = 0x3320646e;
-  state[2] = 0x79622d32;
-  state[3] = 0x6b206574;
-  state[4] = key[0];
-  state[5] = key[1];
-  state[6] = key[2];
-  state[7] = key[3];
-  state[8] = key[4];
-  state[9] = key[5];
-  state[10] = key[6];
-  state[11] = key[7];
-  state[12] = counter;
-  state[13] = nonce[0];
-  state[14] = nonce[1];
-  state[15] = nonce[2];
-
-  // Flip endianness only if the system is big-endian
-  _ensureLittleEndian(state);
-
-  // Initialize working state
-  final Uint32List workingState = Uint32List.fromList(state);
-
-  // Perform block function
-  _chacha20BlockRounds(workingState);
-
-  // Add the original state to the working state
-  for (int i = 0; i < 16; i++) {
-    workingState[i] += state[i];
-  }
-
-  return workingState.buffer.asUint8List();
-}
-
-/// Encrypts or decrypts data using ChaCha20 algorithm, configurable for both encryption and decryption.
-/// Accepts a 256-bit key, a 96-bit nonce, data, and an optional counter (default is 1).
-Uint8List _chacha20(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
-  if (key.length != 32) throw ArgumentError('Invalid key');
-  if (nonce.length != 12) throw ArgumentError('Invalid nonce');
-  if (data.length >= 274877906880) throw ArgumentError('Maximum size reached');
-
-  final int dataSize = data.lengthInBytes;
-  final Uint8List output = Uint8List(dataSize);
-
-  final Uint32List key32Bit = Uint32List.view(key.buffer);
-  final Uint32List nonce32Bit = Uint32List.view(nonce.buffer);
-
-  // Encrypt each full block
-  final int fullBlocks = dataSize ~/ 64;
-  for (int j = 0; j < fullBlocks; j++) {
-    final Uint8List keyStream = chacha20Block(key32Bit, nonce32Bit, counter + j);
-    for (int i = 0; i < 64; i++) {
-      output[j * 64 + i] = data[j * 64 + i] ^ keyStream[i];
-    }
-  }
-
-  // Handle any remaining partial block
-  final int remaining = dataSize % 64;
-  if (remaining != 0) {
-    final Uint8List keyStream = chacha20Block(key32Bit, nonce32Bit, counter + fullBlocks);
-    final int start = fullBlocks * 64;
-    for (int i = 0; i < remaining; i++) {
-      output[start + i] = data[start + i] ^ keyStream[i];
-    }
-  }
-
-  return output;
-}
-
-/// ChaCha20 stream cipher as defined in RFC 8439.
-///
-/// Offers high-performance symmetric key cryptography, with a 256-bit key and 96-bit nonce, and
-/// optional counters. Ideally suited for fast and secure encryption in various applications.
-abstract class ChaCha20 {
-  /// Encrypts data using ChaCha20 as per RFC 8439.
-  ///
-  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default is 1).
-  static encrypt(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
-    return _chacha20(key, nonce, data, counter);
-  }
-
-  /// Decrypts data using ChaCha20 as per RFC 8439.
-  ///
-  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default is 1).
-  static decrypt(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
-    return _chacha20(key, nonce, data, counter);
-  }
-}
+/// Rotates the left bits of a 32-bit unsigned integer.
+int _rotateLeft32By16(int value) => (0xFFFFFFFF & (value << 16)) | (value >> 16);
+int _rotateLeft32By12(int value) => (0xFFFFFFFF & (value << 12)) | (value >> 20);
+int _rotateLeft32By8(int value) => (0xFFFFFFFF & (value << 8)) | (value >> 24);
+int _rotateLeft32By7(int value) => (0xFFFFFFFF & (value << 7)) | (value >> 25);

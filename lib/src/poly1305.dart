@@ -1,56 +1,5 @@
 import 'dart:typed_data';
 
-/// Converts a list of bytes in little-endian order to a BigInt.
-/// In little-endian, the least significant byte is at the lowest index.
-BigInt _leBytesToBigInt(Uint8List bytes) {
-  // Initialize 'aggregator' to accumulate the first 7 bytes efficiently.
-  // This 64-bit int is used for its efficiency before transitioning to BigInt.
-  int aggregator = 0;
-
-  // Accumulate each byte into 'aggregator', shifting according to byte position.
-  // This respects little-endian order, placing the least significant byte first.
-  aggregator |= bytes[0];
-  aggregator |= bytes[1] << 8;
-  aggregator |= bytes[2] << 16;
-  aggregator |= bytes[3] << 24;
-  aggregator |= bytes[4] << 32;
-  aggregator |= bytes[5] << 40;
-  aggregator |= bytes[6] << 48;
-
-  // Convert 'aggregator' to BigInt for handling larger numbers.
-  // Necessary for values exceeding the capacity of a 64-bit int.
-  BigInt result = BigInt.from(aggregator);
-
-  // Process remaining bytes (if any) beyond the first 7 as BigInts.
-  // Continue shifting and combining into 'result' for the correct total value.
-  for (int i = 7; i < bytes.length; i++) {
-    result |= BigInt.from(bytes[i]) << (8 * i);
-  }
-
-  return result;
-}
-
-// Convert a BigInt to a list of 16 bytes in little-endian order.
-Uint8List _bigIntTo16LeBytes(BigInt num) {
-  final Uint8List bytes = Uint8List(16);
-  final BigInt mask = BigInt.from(0xff);
-  for (int i = 0; i < 16; i++) {
-    bytes[i] = (num >> (8 * i) & mask).toInt();
-  }
-  return bytes;
-}
-
-// Clamp function as specified in RFC 8439.
-void _clamp(Uint8List r) {
-  r[3] &= 15;
-  r[7] &= 15;
-  r[11] &= 15;
-  r[15] &= 15;
-  r[4] &= 252;
-  r[8] &= 252;
-  r[12] &= 252;
-}
-
 /// Poly1305 Message Authentication Code (MAC) as defined in RFC 8439.
 ///
 /// Poly1305 is a high-speed MAC algorithm that provides message integrity and authenticity.
@@ -128,4 +77,55 @@ abstract class Poly1305 {
     accumulator = (accumulator + s) % p;
     return _bigIntTo16LeBytes(accumulator);
   }
+}
+
+// Clamp function as specified in RFC 8439.
+void _clamp(Uint8List r) {
+  r[3] &= 15;
+  r[7] &= 15;
+  r[11] &= 15;
+  r[15] &= 15;
+  r[4] &= 252;
+  r[8] &= 252;
+  r[12] &= 252;
+}
+
+/// Converts a list of bytes in little-endian order to a BigInt.
+/// In little-endian, the least significant byte is at the lowest index.
+BigInt _leBytesToBigInt(Uint8List bytes) {
+  // Initialize 'aggregator' to accumulate the first 7 bytes efficiently.
+  // This 64-bit int is used for its efficiency before transitioning to BigInt.
+  int aggregator = 0;
+
+  // Accumulate each byte into 'aggregator', shifting according to byte position.
+  // This respects little-endian order, placing the least significant byte first.
+  aggregator |= bytes[0];
+  aggregator |= bytes[1] << 8;
+  aggregator |= bytes[2] << 16;
+  aggregator |= bytes[3] << 24;
+  aggregator |= bytes[4] << 32;
+  aggregator |= bytes[5] << 40;
+  aggregator |= bytes[6] << 48;
+
+  // Convert 'aggregator' to BigInt for handling larger numbers.
+  // Necessary for values exceeding the capacity of a 64-bit int.
+  BigInt result = BigInt.from(aggregator);
+
+  // Process remaining bytes (if any) beyond the first 7 as BigInts.
+  // Continue shifting and combining into 'result' for the correct total value.
+  for (int i = 7; i < bytes.length; i++) {
+    result |= BigInt.from(bytes[i]) << (8 * i);
+  }
+
+  return result;
+}
+
+// Convert a BigInt to a list of 16 bytes in little-endian order.
+Uint8List _bigIntTo16LeBytes(BigInt num) {
+  final Uint8List bytes = Uint8List(16);
+  final BigInt mask = BigInt.from(0xff);
+  for (int i = 0; i < 16; i++) {
+    bytes[i] = (num >> (8 * i) & mask).toInt();
+  }
+  return bytes;
 }
