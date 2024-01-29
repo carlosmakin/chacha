@@ -1,9 +1,10 @@
 import 'dart:typed_data';
 
-/// ChaCha20 stream cipher as defined in RFC 8439.
+/// ChaCha20 Stream Cipher (RFC 8439).
 ///
-/// Offers high-performance symmetric key cryptography, with a 256-bit key and 96-bit nonce, and
-/// optional counters. Ideally suited for fast and secure encryption in various applications.
+/// A symmetric key cipher offering high performance with 256-bit keys and a 96-bit nonce. ChaCha20
+/// provides fast, secure encryption and decryption operations, featuring optional counter-based operation
+/// for varied cryptographic uses, particularly effective in streaming data encryption.
 abstract class ChaCha20 {
   /// Encrypts data using ChaCha20 as per RFC 8439.
   ///
