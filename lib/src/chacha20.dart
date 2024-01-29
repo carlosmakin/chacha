@@ -8,21 +8,21 @@ import 'dart:typed_data';
 abstract class ChaCha20 {
   /// Encrypts data using ChaCha20 as per RFC 8439.
   ///
-  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default is 1).
+  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default: 1).
   static encrypt(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
     return _chacha20(key, nonce, data, counter);
   }
 
   /// Decrypts data using ChaCha20 as per RFC 8439.
   ///
-  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default is 1).
+  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default: 1).
   static decrypt(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
     return _chacha20(key, nonce, data, counter);
   }
 }
 
 /// Encrypts or decrypts data using ChaCha20 algorithm, configurable for both encryption and decryption.
-/// Accepts a 256-bit key, a 96-bit nonce, data, and an optional counter (default is 1).
+/// Accepts a 256-bit key, a 96-bit nonce, data, and an optional counter (default: 1).
 Uint8List _chacha20(Uint8List key, Uint8List nonce, Uint8List data, [int counter = 1]) {
   if (key.length != 32) throw ArgumentError('Invalid key');
   if (nonce.length != 12) throw ArgumentError('Invalid nonce');
