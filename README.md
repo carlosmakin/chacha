@@ -65,7 +65,7 @@ RFC 8439 standardizes the algorithms and provides comprehensive guidelines for t
 
 ```dart
 import 'dart:typed_data';
-import 'package:your_package/chacha20.dart';
+import 'package:chacha/chacha20.dart';
 
 void encryptFile(Uint8List fileData, Uint8List key, Uint8List nonce) {
   Uint8List encryptedData = ChaCha20.encrypt(key, nonce, fileData);
@@ -79,7 +79,7 @@ void encryptFile(Uint8List fileData, Uint8List key, Uint8List nonce) {
 
 ```dart
 import 'dart:typed_data';
-import 'package:your_package/poly1305.dart';
+import 'package:chacha/poly1305.dart';
 
 Uint8List authenticateMessage(Uint8List message, Uint8List key) {
   Uint8List tag = Poly1305.computeMac(message, key);
@@ -93,7 +93,7 @@ Uint8List authenticateMessage(Uint8List message, Uint8List key) {
 
 ```dart
 import 'dart:typed_data';
-import 'package:your_package/chacha20_poly1305.dart';
+import 'package:chacha/chacha20_poly1305.dart';
 
 Uint8List secureCommunication(Uint8List message, Uint8List key, Uint8List nonce) {
   Uint8List encryptedMessage = ChaCha20Poly1305.encrypt(key, nonce, message);
