@@ -1,12 +1,11 @@
 name: chacha
-description: An implementation of the ChaCha20 cipher, Poly1305 MAC, and ChaCha20-Poly1305 AEAD as per RFC 8439.
+description: An implementation of the symmetric ChaCha20 stream cipher, Poly1305 Message Authentication Code (MAC), and ChaCha20-Poly1305 Authenticated Encryption with Associated Data (AEAD) scheme (RFC 8439).
 version: 1.0.0
 repository: https://github.com/carlosmakin/chacha
 
 environment:
   sdk: ^3.2.5
 
-# Add regular dependencies here.
 dependencies:
   # path: ^1.8.0
 
