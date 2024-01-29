@@ -78,7 +78,7 @@ abstract class Poly1305 {
   }
 }
 
-// Clamp function as specified in RFC 8439.
+/// Clamp function as specified in RFC 8439.
 void _clamp(Uint8List r) {
   r[3] &= 15;
   r[7] &= 15;
@@ -119,7 +119,7 @@ BigInt _leBytesToBigInt(Uint8List bytes) {
   return result;
 }
 
-// Convert a BigInt to a list of 16 bytes in little-endian order.
+/// Convert a BigInt to a list of 16 bytes in little-endian order.
 Uint8List _bigIntTo16LeBytes(BigInt num) {
   final Uint8List bytes = Uint8List(16);
   final BigInt mask = BigInt.from(0xff);
