@@ -3,11 +3,11 @@ import 'dart:typed_data';
 import 'package:chacha/src/chacha20.dart';
 import 'package:chacha/src/poly1305.dart';
 
-/// ChaCha20-Poly1305 Authenticated Encryption with Associated Data (AEAD) as defined in RFC 8439.
+/// ChaCha20-Poly1305 Authenticated Encryption with Associated Data (AEAD) (RFC 8439).
 ///
-/// Combining ChaCha20 cipher and Poly1305 MAC, this class offers symmetric encryption ensuring
-/// data confidentiality, integrity, and authenticity. It is optimal for high-security and
-/// high-performance environments in symmetric data encryption and authentication.
+/// Combines the symmetric ChaCha20 cipher and Poly1305 MAC to provide encryption along with data integrity
+/// and authenticity verification. This class is ideal for high-security scenarios, ensuring confidentiality,
+/// integrity, and authenticity in encryption and authentication processes.
 abstract class ChaCha20Poly1305 {
   /// Generates a Poly1305 key using the ChaCha20 block function with a zero counter as per RFC 8439.
   ///
