@@ -1,10 +1,9 @@
 import 'dart:typed_data';
 
-/// Poly1305 Message Authentication Code (MAC) as defined in RFC 8439.
+/// Poly1305 Message Authentication Code (MAC) (RFC 8439).
 ///
-/// Poly1305 is a high-speed MAC algorithm that provides message integrity and authenticity.
-/// This class facilitates the generation of MACs with a 256-bit key, ensuring robust protection
-/// against message tampering in secure communications.
+/// Implements a high-speed symmetric MAC algorithm using a 256-bit key. Poly1305 is designed to assure
+/// message integrity and authenticity, effectively guarding against tampering in secure communication channels.
 abstract class Poly1305 {
   /// Verifies the integrity and authenticity of a message using its Poly1305 MAC.
   ///
