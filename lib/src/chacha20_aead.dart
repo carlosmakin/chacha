@@ -60,7 +60,7 @@ abstract class ChaCha20Poly1305 {
     final Uint8List macData = _buildMacData(ciphertext, aad);
 
     // Calculate and verify the MAC tag
-    if (Poly1305.verifyMac(otk, macData, tag)) {
+    if (!Poly1305.verifyMac(otk, macData, tag)) {
       throw Exception('MAC verification failed.');
     }
 
