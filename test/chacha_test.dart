@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:chacha/src/chacha.dart';
 import 'package:test/test.dart';
@@ -49,7 +48,7 @@ void main() {
       // Start chunked conversion
       final ChaCha20Converter chacha20 =
           ChaCha20Converter(key: key, nonce: nonce, counter: counter);
-      final ByteConversionSink inputSink = chacha20.startChunkedConversion(streamController.sink);
+      final Sink<List<int>> inputSink = chacha20.startChunkedConversion(streamController.sink);
 
       // Define the chunk size
       const int chunkSize = 64; // Adjust this size as needed
