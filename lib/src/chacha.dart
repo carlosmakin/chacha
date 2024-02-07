@@ -72,31 +72,26 @@ class ChaCha20Converter extends Converter<List<int>, List<int>> {
   }
 
   @override
-  ByteConversionSink startChunkedConversion(Sink<List<int>> sink) {
-    if (sink is! ByteConversionSink) sink = ByteConversionSink.from(sink);
+  Sink<List<int>> startChunkedConversion(Sink<List<int>> sink) {
     return _ChaCha20Sink(this, outSink: sink);
   }
 }
 
-class _ChaCha20Sink implements ByteConversionSink {
+class _ChaCha20Sink implements Sink<List<int>> {
   _ChaCha20Sink(
     this._converter, {
-    required ByteConversionSink outSink,
+    required Sink<List<int>> outSink,
   })  : _outSink = outSink,
         _counter = _converter.counter;
 
   final ChaCha20Converter _converter;
-  final ByteConversionSink _outSink;
+  final Sink<List<int>> _outSink;
   int _counter;
 
   @override
-  void add(List<int> chunk) => addSlice(chunk, 0, chunk.length, false);
-
-  @override
-  void addSlice(List<int> chunk, int start, int end, bool isLast) {
+  void add(List<int> chunk) {
     _outSink.add(_converter.convert(chunk, counter: _counter));
     _counter += (chunk.length / 64).ceil();
-    if (isLast) close();
   }
 
   @override
