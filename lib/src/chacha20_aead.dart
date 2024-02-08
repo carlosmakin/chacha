@@ -13,10 +13,10 @@ abstract class ChaCha20Poly1305 {
   ///
   /// Accepts a 256-bit key and a 96-bit nonce.
   static Uint8List generateKey(Uint8List key, Uint8List nonce) {
-    final Uint32List key32Bit = Uint32List.view(key.buffer);
-    final Uint32List nonce32Bit = Uint32List.view(nonce.buffer);
-    final Uint32List state = initState(key32Bit, nonce32Bit);
-    return chacha20Block(key32Bit, nonce32Bit, 0, state).sublist(0, 32);
+    final Uint32List state = initState(key.buffer.asUint32List(), nonce.buffer.asUint32List());
+    final Uint8List keystream = Uint8List(64);
+    chacha20Block(0, keystream, state, Uint32List(16));
+    return keystream.sublist(0, 32);
   }
 
   /// Encrypts and authenticates data using ChaCha20-Poly1305 AEAD scheme as per RFC 8439.
@@ -27,7 +27,7 @@ abstract class ChaCha20Poly1305 {
     final Uint8List otk = generateKey(key, nonce);
 
     // Encrypt the data using ChaCha20
-    final Uint8List ciphertext = ChaCha20.encrypt(key, nonce, data, 1);
+    final Uint8List ciphertext = ChaCha20(key: key, nonce: nonce, counter: 1).convert(data);
 
     // Create the Poly1305 message for MAC tag calculation
     final Uint8List macData = _buildMacData(ciphertext, aad);
@@ -68,7 +68,7 @@ abstract class ChaCha20Poly1305 {
     }
 
     // Decrypt the data using ChaCha20
-    return ChaCha20.decrypt(key, nonce, ciphertext);
+    return ChaCha20(key: key, nonce: nonce, counter: 1).convert(ciphertext);
   }
 }
 

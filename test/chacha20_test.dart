@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:chacha/src/chacha20.dart';
 import 'package:test/test.dart';
@@ -15,12 +16,14 @@ void main() {
       final int counter = testVector['counter']!;
 
       final Uint32List state = initState(key, nonce);
+      final Uint8List keystream = Uint8List(64);
+      final Uint32List workingState = Uint32List(16);
 
-      final Uint8List result = chacha20Block(key, nonce, counter, state);
+      chacha20Block(counter, keystream, state, workingState);
       final Uint8List expected = parseBlockHexString(testVector['keyStream']!);
 
-      expect(result.length, equals(64));
-      expect(result, equals(expected));
+      expect(keystream.length, equals(64));
+      expect(keystream, equals(expected));
     });
   }
 
@@ -32,10 +35,62 @@ void main() {
       final Uint8List plaintext = parseBlockHexString(testVector['plaintext']!);
       final int counter = testVector['counter']!;
 
-      final Uint8List result = ChaCha20.encrypt(key, nonce, plaintext, counter);
+      final ChaCha20 chacha20 = ChaCha20(key: key, nonce: nonce, counter: counter);
+      final Uint8List result = chacha20.convert(plaintext);
       final Uint8List expected = parseBlockHexString(testVector['ciphertext']!);
 
       expect(plaintext.length, equals(result.length));
+      expect(plaintext != result, isTrue);
+      expect(result, equals(expected));
+    });
+  }
+
+  for (int i = 0; i < chaha20EncryptionTestVectors.length; i++) {
+    final ChaCha20TestVector testVector = chaha20EncryptionTestVectors[i];
+    test('The ChaCha20 Stream Encryption Test Vector ${(i + 1)}', () async {
+      final Uint8List key = parseBlockHexString(testVector['key']!);
+      final Uint8List nonce = parseBlockHexString(testVector['nonce']!);
+      final Uint8List plaintext = parseBlockHexString(testVector['plaintext']!);
+      final int counter = testVector['counter']!;
+      final Uint8List expected = parseBlockHexString(testVector['ciphertext']!);
+
+      // Create a StreamController to collect the output
+      final StreamController<Uint8List> streamController = StreamController<Uint8List>();
+      final List<Uint8List> outputs = <Uint8List>[];
+
+      // Listen to the output stream and collect the chunks
+      streamController.stream.listen((Uint8List chunk) {
+        outputs.add(chunk);
+      });
+
+      // Start chunked conversion
+      final ChaCha20 chacha20 = ChaCha20(key: key, nonce: nonce, counter: counter);
+      final Sink<List<int>> inputSink = chacha20.startChunkedConversion(streamController.sink);
+
+      // Define the chunk size
+      const int chunkSize = 64; // Adjust this size as needed
+
+      // Split the plaintext into chunks and add them to the sink
+      int offset = 0;
+      while (offset < plaintext.length) {
+        final int end =
+            (offset + chunkSize < plaintext.length) ? offset + chunkSize : plaintext.length;
+        final Uint8List chunk = Uint8List.sublistView(plaintext, offset, end);
+        inputSink.add(chunk);
+        offset += chunkSize;
+      }
+
+      // Close the sink to signify the end of data
+      inputSink.close();
+
+      // Wait until the stream controller is closed by the sink
+      await streamController.close();
+
+      // Combine all the output chunks into a single Uint8List
+      final Uint8List result = Uint8List.fromList(outputs.expand((Uint8List x) => x).toList());
+
+      // Perform the assertions
+      expect(plaintext.length, equals(expected.length));
       expect(plaintext != result, isTrue);
       expect(result, equals(expected));
     });
