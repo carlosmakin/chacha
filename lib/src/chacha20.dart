@@ -27,7 +27,7 @@ abstract class ChaCha20 {
 
 /// Encrypts or decrypts data using ChaCha20 algorithm, configurable for both encryption and decryption.
 /// Accepts a 256-bit key, a 96-bit nonce, data, and an optional counter (default: 1).
-Uint8List _chacha20(Uint32List key, Uint32List nonce, Uint8List data, [int counter = 1]) {
+Uint8List _chacha20(Uint32List key, Uint32List nonce, Uint8List data, int counter) {
   if (data.length >= 274877906880) throw ArgumentError('Maximum size reached');
 
   final int dataSize = data.lengthInBytes;
