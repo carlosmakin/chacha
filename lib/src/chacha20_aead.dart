@@ -13,7 +13,10 @@ abstract class ChaCha20Poly1305 {
   ///
   /// Accepts a 256-bit key and a 96-bit nonce.
   static Uint8List generateKey(Uint8List key, Uint8List nonce) {
-    return chacha20Block(key.buffer.asUint32List(), nonce.buffer.asUint32List(), 0).sublist(0, 32);
+    final Uint32List key32Bit = Uint32List.view(key.buffer);
+    final Uint32List nonce32Bit = Uint32List.view(nonce.buffer);
+    final Uint32List state = initState(key32Bit, nonce32Bit);
+    return chacha20Block(key32Bit, nonce32Bit, 0, state).sublist(0, 32);
   }
 
   /// Encrypts and authenticates data using ChaCha20-Poly1305 AEAD scheme as per RFC 8439.
