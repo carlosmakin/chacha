@@ -68,7 +68,7 @@ import 'dart:typed_data';
 import 'package:chacha/chacha20.dart';
 
 void encryptFile(Uint8List fileData, Uint8List key, Uint8List nonce) {
-  ChaCha20 chacha20 = ChaCha20(key: key, nonce: nonce, counter: counter);
+  ChaCha20 chacha20 = ChaCha20(key: key, nonce: nonce);
   Uint8List encryptedData = chacha20.convert(fileData);
   // Save or transmit encryptedData
 }
