@@ -16,8 +16,7 @@ void main() {
       final Uint8List plaintext = parseBlockHexString(testVector['plaintext']!);
       final int counter = testVector['counter']!;
 
-      final ChaCha20Converter chacha20 =
-          ChaCha20Converter(key: key, nonce: nonce, counter: counter);
+      final ChaCha20Cipher chacha20 = ChaCha20Cipher(key: key, nonce: nonce, counter: counter);
       final Uint8List result = chacha20.convert(plaintext);
       final Uint8List expected = parseBlockHexString(testVector['ciphertext']!);
 
@@ -46,8 +45,7 @@ void main() {
       });
 
       // Start chunked conversion
-      final ChaCha20Converter chacha20 =
-          ChaCha20Converter(key: key, nonce: nonce, counter: counter);
+      final ChaCha20Cipher chacha20 = ChaCha20Cipher(key: key, nonce: nonce, counter: counter);
       final Sink<List<int>> inputSink = chacha20.startChunkedConversion(streamController.sink);
 
       // Define the chunk size
