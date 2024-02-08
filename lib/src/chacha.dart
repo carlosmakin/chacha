@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-class ChaCha20Converter extends Converter<List<int>, List<int>> {
-  const ChaCha20Converter._(this._key, this._nonce, this.counter);
+class ChaCha20Cipher extends Converter<List<int>, List<int>> {
+  const ChaCha20Cipher._(this._counter, this._keystream, this._state);
 
-  factory ChaCha20Converter({
+  factory ChaCha20Cipher({
     required Uint8List key,
     required Uint8List nonce,
     int counter = 1,
@@ -12,60 +12,45 @@ class ChaCha20Converter extends Converter<List<int>, List<int>> {
     if (key.length != 32) throw ArgumentError('Invalid key');
     if (nonce.length != 12) throw ArgumentError('Invalid nonce');
 
-    final Uint32List key32Bit = Uint32List.view(key.buffer);
-    final Uint32List nonce32Bit = Uint32List.view(nonce.buffer);
-    return ChaCha20Converter._(key32Bit, nonce32Bit, counter);
+    return ChaCha20Cipher._(
+      counter,
+      Uint8List(64),
+      initState(Uint32List.view(key.buffer), Uint32List.view(nonce.buffer)),
+    );
   }
 
-  final Uint32List _key;
-  final Uint32List _nonce;
-  final int counter;
+  final int _counter;
+  final Uint8List _keystream;
+  final Uint32List _state;
 
   @override
   Uint8List convert(List<int> input, {int? counter}) {
-    counter ??= this.counter;
-
-    if (input.length >= 274877906880) throw ArgumentError('Maximum size reached');
+    counter ??= _counter;
 
     final int dataSize = input.length;
     final Uint8List output = Uint8List(dataSize);
 
-    // Initialize the state with the constants, key, counter, and nonce
-    final Uint32List state = Uint32List(16);
-
-    state[0] = 0x61707865;
-    state[1] = 0x3320646e;
-    state[2] = 0x79622d32;
-    state[3] = 0x6b206574;
-    state[4] = _key[0];
-    state[5] = _key[1];
-    state[6] = _key[2];
-    state[7] = _key[3];
-    state[8] = _key[4];
-    state[9] = _key[5];
-    state[10] = _key[6];
-    state[11] = _key[7];
-    state[13] = _nonce[0];
-    state[14] = _nonce[1];
-    state[15] = _nonce[2];
-
     // Encrypt each full block
     final int fullBlocks = dataSize ~/ 64;
     for (int j = 0; j < fullBlocks; j++) {
-      final Uint8List keyStream = chacha20Block(_key, _nonce, counter + j, state);
+      chacha20Block(counter + j, _state, _keystream);
       for (int i = 0; i < 64; i++) {
-        output[j * 64 + i] = input[j * 64 + i] ^ keyStream[i];
+        output[j * 64 + i] = input[j * 64 + i] ^ _keystream[i];
       }
     }
 
     // Handle any remaining partial block
     final int remaining = dataSize % 64;
     if (remaining != 0) {
-      final Uint8List keyStream = chacha20Block(_key, _nonce, counter + fullBlocks, state);
+      chacha20Block(counter + fullBlocks, _state, _keystream);
       final int start = fullBlocks * 64;
       for (int i = 0; i < remaining; i++) {
-        output[start + i] = input[start + i] ^ keyStream[i];
+        output[start + i] = input[start + i] ^ _keystream[i];
       }
+    }
+
+    for (int i = 0; i < 64; i++) {
+      _keystream[i] = 0;
     }
 
     return output;
@@ -82,9 +67,9 @@ class _ChaCha20Sink implements Sink<List<int>> {
     this._converter, {
     required Sink<List<int>> outSink,
   })  : _outSink = outSink,
-        _counter = _converter.counter;
+        _counter = _converter._counter;
 
-  final ChaCha20Converter _converter;
+  final ChaCha20Cipher _converter;
   final Sink<List<int>> _outSink;
   int _counter;
 
@@ -98,6 +83,29 @@ class _ChaCha20Sink implements Sink<List<int>> {
   void close() => _outSink.close();
 }
 
+// Initializes the state with the constants, key, and nonce
+Uint32List initState(Uint32List key, Uint32List nonce) {
+  final Uint32List state = Uint32List(16);
+
+  state[0] = 0x61707865;
+  state[1] = 0x3320646e;
+  state[2] = 0x79622d32;
+  state[3] = 0x6b206574;
+  state[4] = key[0];
+  state[5] = key[1];
+  state[6] = key[2];
+  state[7] = key[3];
+  state[8] = key[4];
+  state[9] = key[5];
+  state[10] = key[6];
+  state[11] = key[7];
+  state[13] = nonce[0];
+  state[14] = nonce[1];
+  state[15] = nonce[2];
+
+  return state;
+}
+
 /// The ChaCha20 block function is the core of the ChaCha20 algorithm.
 /// The function transforms a ChaCha state by running multiple quarter rounds.
 ///
@@ -108,7 +116,7 @@ class _ChaCha20Sink implements Sink<List<int>> {
 /// - A 32-bit block count parameter, treated as a 32-bit little-endian integer.
 ///
 ///The output is 64 random-looking bytes.
-Uint8List chacha20Block(Uint32List key, Uint32List nonce, int counter, Uint32List state) {
+void chacha20Block(int counter, Uint32List state, Uint8List keystream) {
   // Initialize the state with the counter
   state[12] = counter;
 
@@ -125,8 +133,7 @@ Uint8List chacha20Block(Uint32List key, Uint32List nonce, int counter, Uint32Lis
   for (int i = 0; i < 16; i++) {
     workingState[i] += state[i];
   }
-
-  return workingState.buffer.asUint8List();
+  keystream.setRange(0, 64, workingState.buffer.asUint8List());
 }
 
 /// Ensures that the elements of the given `Uint32List` are in little-endian format.
