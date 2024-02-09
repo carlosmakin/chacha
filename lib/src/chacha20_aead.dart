@@ -27,13 +27,13 @@ abstract class ChaCha20Poly1305 {
     final Uint8List otk = generateKey(key, nonce);
 
     // Encrypt the data using ChaCha20
-    final Uint8List ciphertext = ChaCha20(key: key, nonce: nonce, counter: 1).convert(data);
+    final Uint8List ciphertext = ChaCha20(key, nonce, 1).convert(data);
 
     // Create the Poly1305 message for MAC tag calculation
     final Uint8List macData = _buildMacData(ciphertext, aad);
 
     // Calculate the MAC tag using Poly1305
-    final Uint8List tag = Poly1305.computeMac(otk, macData);
+    final Uint8List tag = Poly1305(otk).convert(macData);
 
     // The output from the AEAD is the concatenation of:
     // - A ciphertext of the same length as the plaintext
@@ -63,12 +63,10 @@ abstract class ChaCha20Poly1305 {
     final Uint8List macData = _buildMacData(ciphertext, aad);
 
     // Calculate and verify the MAC tag
-    if (!Poly1305.verifyMac(otk, macData, tag)) {
-      throw Exception('MAC verification failed.');
-    }
+    if (!verifyMac(otk, macData, tag)) throw Exception('MAC verification failed.');
 
     // Decrypt the data using ChaCha20
-    return ChaCha20(key: key, nonce: nonce, counter: 1).convert(ciphertext);
+    return ChaCha20(key, nonce, 1).convert(ciphertext);
   }
 }
 
