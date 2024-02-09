@@ -12,11 +12,7 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
   /// Converts data using ChaCha20 as per RFC 8439.
   ///
   /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default: 1).
-  factory ChaCha20({
-    required Uint8List key,
-    required Uint8List nonce,
-    int counter = 1,
-  }) {
+  factory ChaCha20(Uint8List key, Uint8List nonce, [int counter = 1]) {
     if (key.length != 32) throw ArgumentError('Invalid key');
     if (nonce.length != 12) throw ArgumentError('Invalid nonce');
 
