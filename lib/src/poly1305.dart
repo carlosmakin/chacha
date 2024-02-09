@@ -38,30 +38,30 @@ abstract class Poly1305 {
     final BigInt s = _leBytesToBigInt(key.sublist(16, 32));
 
     BigInt accumulator = BigInt.zero;
-    final BigInt p = (BigInt.one << 130) - BigInt.from(5); // 2^130 - 5
+    final BigInt p = (BigInt.one << 130) - BigInt.from(5);
 
-    // Preallocate buffer for performance
-    final Uint8List block = Uint8List(17);
-    block[16] = 1; // Add one bit beyond the number of bytes for all full blocks
+    final Uint8List block = Uint8List(17)..[16] = 1;
 
     // Process all full 16-byte blocks
-    final int fullBlockEnd = message.length - (message.length % 16);
-    for (int i = 0; i < fullBlockEnd; i += 16) {
-      for (int j = 0; j < 16; j++) {
-        block[j] = message[i + j];
+    final int dataSize = message.length;
+    final int fullBlocks = dataSize ~/ 16;
+    for (int j = 0; j < fullBlocks; j++) {
+      for (int i = 0; i < 16; i++) {
+        block[i] = message[j * 16 + i];
       }
       final BigInt n = _leBytesToBigInt(block);
       accumulator = (accumulator + n) * r % p;
     }
 
-    // Process the final block, if there is any remainder
-    if (fullBlockEnd < message.length) {
-      final int finalBlockLen = message.length - fullBlockEnd;
-      for (int j = 0; j < finalBlockLen; j++) {
-        block[j] = message[fullBlockEnd + j];
+    // Handle any remaining partial block
+    final int remaining = dataSize % 16;
+    if (remaining != 0) {
+      final int start = fullBlocks * 16;
+      for (int j = 0; j < remaining; j++) {
+        block[j] = message[start + j];
       }
-      block[finalBlockLen] = 1;
-      for (int j = finalBlockLen + 1; j < 17; j++) {
+      block[remaining] = 1;
+      for (int j = remaining + 1; j < 17; j++) {
         block[j] = 0;
       }
       final BigInt n = _leBytesToBigInt(block);
@@ -69,9 +69,7 @@ abstract class Poly1305 {
     }
 
     // Zero out the block for security
-    for (int j = 0; j < 17; j++) {
-      block[j] = 0;
-    }
+    block.fillRange(0, 17, 0);
 
     accumulator = (accumulator + s) % p;
     return _bigIntTo16LeBytes(accumulator);
