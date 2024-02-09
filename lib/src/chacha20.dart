@@ -9,6 +9,9 @@ import 'dart:typed_data';
 class ChaCha20 extends Converter<List<int>, List<int>> {
   const ChaCha20._(this._counter, this._state);
 
+  /// Converts data using ChaCha20 as per RFC 8439.
+  ///
+  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default: 1).
   factory ChaCha20({
     required Uint8List key,
     required Uint8List nonce,
@@ -29,9 +32,6 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
   final int _counter;
   final Uint32List _state;
 
-  /// Converts data using ChaCha20 as per RFC 8439.
-  ///
-  /// Accepts a 256-bit key, a 96-bit nonce, and an optional counter (default: 1).
   @override
   Uint8List convert(List<int> input, {int? counter}) {
     counter ??= _counter;
@@ -42,7 +42,7 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
     final Uint8List keystream = Uint8List(64);
     final Uint32List workingState = Uint32List(16);
 
-    // Encrypt each full block
+    // Process all full 64-byte blocks
     final int fullBlocks = dataSize ~/ 64;
     for (int j = 0; j < fullBlocks; j++) {
       chacha20Block(counter + j, keystream, _state, workingState);
