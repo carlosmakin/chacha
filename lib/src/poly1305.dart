@@ -1,34 +1,17 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 /// Poly1305 Message Authentication Code (MAC) (RFC 8439).
 ///
 /// Implements a high-speed symmetric MAC algorithm using a 256-bit key. Poly1305 is designed to assure
 /// message integrity and authenticity, effectively guarding against tampering in secure communication channels.
-abstract class Poly1305 {
-  /// Verifies the integrity and authenticity of a message using its Poly1305 MAC.
-  ///
-  /// Accepts the key used to generate the MAC, the message, and the MAC to be verified.
-  /// Use this to prevent timing attacks during MAC verification.
-  static bool verifyMac(Uint8List key, Uint8List message, Uint8List mac) {
-    final Uint8List computedMac = computeMac(key, message);
-
-    // Return false immediately if lengths differ, as the lists can't be equal.
-    if (computedMac.length != mac.length) return false;
-
-    int result = 0;
-    // Compare elements using XOR; accumulate any differences in `result`.
-    for (int i = 0; i < computedMac.length; i++) {
-      result |= (computedMac[i] ^ mac[i]);
-    }
-
-    // If `result` is 0, all elements matched; otherwise, at least one pair differed.
-    return result == 0;
-  }
+class Poly1305 extends Converter<List<int>, List<int>> {
+  Poly1305._(this._block, this._r, this._s, this._p, this._accumulator);
 
   /// Generates a Poly1305 Message Authentication Code (MAC) as per RFC 8439.
   ///
   /// Accepts a 256-bit key for message integrity and authenticity.
-  static Uint8List computeMac(Uint8List key, Uint8List message) {
+  factory Poly1305(Uint8List key) {
     if (key.length < 16) throw ArgumentError('Invalid key');
 
     final Uint8List rBytes = key.sublist(0, 16);
@@ -42,15 +25,31 @@ abstract class Poly1305 {
 
     final Uint8List block = Uint8List(17)..[16] = 1;
 
+    return Poly1305._(block, r, s, p, accumulator);
+  }
+
+  final BigInt _r;
+  final BigInt _s;
+  final BigInt _p;
+  final Uint8List _block;
+
+  BigInt _accumulator;
+
+  @override
+  Uint8List convert(List<int> input) {
+    return (this.._process(input))._finalize();
+  }
+
+  void _process(List<int> input) {
     // Process all full 16-byte blocks
-    final int dataSize = message.length;
+    final int dataSize = input.length;
     final int fullBlocks = dataSize ~/ 16;
     for (int j = 0; j < fullBlocks; j++) {
       for (int i = 0; i < 16; i++) {
-        block[i] = message[j * 16 + i];
+        _block[i] = input[j * 16 + i];
       }
-      final BigInt n = _leBytesToBigInt(block);
-      accumulator = (accumulator + n) * r % p;
+      final BigInt n = _leBytesToBigInt(_block);
+      _accumulator = (_accumulator + n) * _r % _p;
     }
 
     // Handle any remaining partial block
@@ -58,21 +57,48 @@ abstract class Poly1305 {
     if (remaining != 0) {
       final int start = fullBlocks * 16;
       for (int j = 0; j < remaining; j++) {
-        block[j] = message[start + j];
+        _block[j] = input[start + j];
       }
-      block[remaining] = 1;
+      _block[remaining] = 1;
       for (int j = remaining + 1; j < 17; j++) {
-        block[j] = 0;
+        _block[j] = 0;
       }
-      final BigInt n = _leBytesToBigInt(block);
-      accumulator = (accumulator + n) * r % p;
+      final BigInt n = _leBytesToBigInt(_block);
+      _accumulator = (_accumulator + n) * _r % _p;
     }
 
     // Zero out the block for security
-    block.fillRange(0, 17, 0);
+    _block.fillRange(0, 17, 0);
+  }
 
-    accumulator = (accumulator + s) % p;
-    return _bigIntTo16LeBytes(accumulator);
+  Uint8List _finalize() {
+    _block.fillRange(0, 17, 0);
+    _accumulator = (_accumulator + _s) % _p;
+    return _bigIntTo16LeBytes(_accumulator);
+  }
+
+  @override
+  Sink<List<int>> startChunkedConversion(Sink<List<int>> sink) {
+    return _Poly1305Sink(this, outSink: sink);
+  }
+}
+
+class _Poly1305Sink implements Sink<List<int>> {
+  _Poly1305Sink(
+    this._converter, {
+    required Sink<List<int>> outSink,
+  }) : _outSink = outSink;
+
+  final Poly1305 _converter;
+  final Sink<List<int>> _outSink;
+
+  @override
+  void add(List<int> chunk) => _converter._process(chunk);
+
+  @override
+  void close() {
+    _outSink.add(_converter._finalize());
+    _outSink.close();
   }
 }
 
@@ -90,31 +116,44 @@ void _clamp(Uint8List r) {
 /// Converts a list of bytes in little-endian order to a BigInt.
 /// In little-endian, the least significant byte is at the lowest index.
 BigInt _leBytesToBigInt(Uint8List bytes) {
-  // Initialize 'aggregator' to accumulate the first 7 bytes efficiently.
-  // This 64-bit int is used for its efficiency before transitioning to BigInt.
-  int aggregator = 0;
+  // Initialize variables for mixed approach
+  int intLow = 0;
+  int intMid = 0;
+  int intHigh = 0;
 
-  // Accumulate each byte into 'aggregator', shifting according to byte position.
-  // This respects little-endian order, placing the least significant byte first.
-  aggregator |= bytes[0];
-  aggregator |= bytes[1] << 8;
-  aggregator |= bytes[2] << 16;
-  aggregator |= bytes[3] << 24;
-  aggregator |= bytes[4] << 32;
-  aggregator |= bytes[5] << 40;
-  aggregator |= bytes[6] << 48;
+  // Accumulate the first 7 bytes into 'intLow'
+  intLow |= bytes[0];
+  intLow |= bytes[1] << 8;
+  intLow |= bytes[2] << 16;
+  intLow |= bytes[3] << 24;
+  intLow |= bytes[4] << 32;
+  intLow |= bytes[5] << 40;
+  intLow |= bytes[6] << 48;
 
-  // Convert 'aggregator' to BigInt for handling larger numbers.
-  // Necessary for values exceeding the capacity of a 64-bit int.
-  BigInt result = BigInt.from(aggregator);
+  // Accumulate the next 7 bytes into 'intMid'
+  intMid |= bytes[7];
+  intMid |= bytes[8] << 8;
+  intMid |= bytes[9] << 16;
+  intMid |= bytes[10] << 24;
+  intMid |= bytes[11] << 32;
+  intMid |= bytes[12] << 40;
+  intMid |= bytes[13] << 48;
 
-  // Process remaining bytes (if any) beyond the first 7 as BigInts.
-  // Continue shifting and combining into 'result' for the correct total value.
-  for (int i = 7; i < bytes.length; i++) {
-    result |= BigInt.from(bytes[i]) << (8 * i);
-  }
+  // Accumulate the last 3 bytes into 'intHigh'
+  intHigh |= bytes[14];
+  intHigh |= bytes[15] << 8;
+  if (bytes.length == 17) intHigh |= bytes[16] << 16;
 
-  return result;
+  // Initialize BigInts for final assembly
+  BigInt bigIntLow = BigInt.from(intLow);
+  BigInt bigIntMid = BigInt.from(intMid);
+  BigInt bigIntHigh = BigInt.from(intHigh);
+
+  // Shift up 'bigIntMid' and 'bigIntHigh' to make space
+  bigIntLow |= (bigIntMid <<= 56);
+  bigIntLow |= (bigIntHigh <<= 112);
+
+  return bigIntLow;
 }
 
 /// Convert a BigInt to a list of 16 bytes in little-endian order.
@@ -125,4 +164,24 @@ Uint8List _bigIntTo16LeBytes(BigInt num) {
     bytes[i] = (num >> (8 * i) & mask).toInt();
   }
   return bytes;
+}
+
+/// Verifies the integrity and authenticity of a message using its Poly1305 MAC.
+///
+/// Accepts the key used to generate the MAC, the message, and the MAC to be verified.
+/// Use this to prevent timing attacks during MAC verification.
+bool verifyMac(Uint8List key, Uint8List message, Uint8List mac) {
+  final Uint8List computedMac = Poly1305(key).convert(message);
+
+  // Return false immediately if lengths differ, as the lists can't be equal.
+  if (computedMac.length != mac.length) return false;
+
+  int result = 0;
+  // Compare elements using XOR; accumulate any differences in `result`.
+  for (int i = 0; i < computedMac.length; i++) {
+    result |= (computedMac[i] ^ mac[i]);
+  }
+
+  // If `result` is 0, all elements matched; otherwise, at least one pair differed.
+  return result == 0;
 }
