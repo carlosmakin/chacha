@@ -54,23 +54,16 @@ void main() {
       final int counter = testVector['counter']!;
       final Uint8List expected = parseBlockHexString(testVector['ciphertext']!);
 
-      // Create a StreamController to collect the output
+      final BytesBuilder outputs = BytesBuilder();
       final StreamController<Uint8List> streamController = StreamController<Uint8List>();
-      final List<Uint8List> outputs = <Uint8List>[];
 
-      // Listen to the output stream and collect the chunks
-      streamController.stream.listen((Uint8List chunk) {
-        outputs.add(chunk);
-      });
+      streamController.stream.listen((Uint8List chunk) => outputs.add(chunk));
 
-      // Start chunked conversion
       final ChaCha20 chacha20 = ChaCha20(key: key, nonce: nonce, counter: counter);
       final Sink<List<int>> inputSink = chacha20.startChunkedConversion(streamController.sink);
 
-      // Define the chunk size
-      const int chunkSize = 64; // Adjust this size as needed
+      const int chunkSize = 64;
 
-      // Split the plaintext into chunks and add them to the sink
       int offset = 0;
       while (offset < plaintext.length) {
         final int end =
@@ -80,16 +73,11 @@ void main() {
         offset += chunkSize;
       }
 
-      // Close the sink to signify the end of data
       inputSink.close();
-
-      // Wait until the stream controller is closed by the sink
       await streamController.close();
 
-      // Combine all the output chunks into a single Uint8List
-      final Uint8List result = Uint8List.fromList(outputs.expand((Uint8List x) => x).toList());
+      final Uint8List result = outputs.toBytes();
 
-      // Perform the assertions
       expect(plaintext.length, equals(expected.length));
       expect(plaintext != result, isTrue);
       expect(result, equals(expected));
