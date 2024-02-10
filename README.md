@@ -68,7 +68,7 @@ import 'dart:typed_data';
 import 'package:chacha/chacha20.dart';
 
 void encryptFile(Uint8List fileData, Uint8List key, Uint8List nonce) {
-  ChaCha20 chacha20 = ChaCha20(key: key, nonce: nonce);
+  ChaCha20 chacha20 = ChaCha20(key, nonce);
   Uint8List encryptedData = chacha20.convert(fileData);
   // Save or transmit encryptedData
 }
@@ -83,7 +83,8 @@ import 'dart:typed_data';
 import 'package:chacha/poly1305.dart';
 
 Uint8List authenticateMessage(Uint8List message, Uint8List key) {
-  Uint8List tag = Poly1305.computeMac(message, key);
+  Poly1305 poly1305 = Poly1305(key)
+  Uint8List tag = poly1305.convert(message);
   // Use the tag for message verification
 }
 ```
