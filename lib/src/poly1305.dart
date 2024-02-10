@@ -14,15 +14,10 @@ class Poly1305 extends Converter<List<int>, List<int>> {
   factory Poly1305(Uint8List key) {
     if (key.length < 16) throw ArgumentError('Invalid key');
 
-    final Uint8List rBytes = key.sublist(0, 16);
-    _clamp(rBytes);
-
-    final BigInt r = _leBytesToBigInt(rBytes);
-    final BigInt s = _leBytesToBigInt(key.sublist(16, 32));
-
     BigInt accumulator = BigInt.zero;
+    final BigInt r = _leBytesToBigInt(_clamp(key.sublist(0, 16)));
+    final BigInt s = _leBytesToBigInt(key.sublist(16, 32));
     final BigInt p = (BigInt.one << 130) - BigInt.from(5);
-
     final Uint8List block = Uint8List(17)..[16] = 1;
 
     return Poly1305._(block, r, s, p, accumulator);
@@ -96,7 +91,7 @@ class _Poly1305Sink implements Sink<List<int>> {
 }
 
 /// Clamp function as specified in RFC 8439.
-void _clamp(Uint8List r) {
+Uint8List _clamp(Uint8List r) {
   r[3] &= 15;
   r[7] &= 15;
   r[11] &= 15;
@@ -104,6 +99,8 @@ void _clamp(Uint8List r) {
   r[4] &= 252;
   r[8] &= 252;
   r[12] &= 252;
+
+  return r;
 }
 
 /// Converts a list of bytes in little-endian order to a BigInt.
