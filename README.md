@@ -1,4 +1,4 @@
-## ChaCha 💃
+## ChaCha20 💃
 
 ### Overview
 
