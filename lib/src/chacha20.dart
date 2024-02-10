@@ -32,14 +32,14 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
   Uint8List convert(List<int> input, {int? counter}) {
     counter ??= _counter;
 
-    final int dataSize = input.length;
-    final Uint8List output = Uint8List(dataSize);
+    final int inputSize = input.length;
+    final Uint8List output = Uint8List(inputSize);
 
     final Uint8List keystream = Uint8List(64);
     final Uint32List workingState = Uint32List(16);
 
     // Process all full 64-byte blocks
-    final int fullBlocks = dataSize ~/ 64;
+    final int fullBlocks = inputSize ~/ 64;
     for (int j = 0; j < fullBlocks; j++) {
       chacha20Block(counter + j, keystream, _state, workingState);
       for (int i = 0; i < 64; i++) {
@@ -48,7 +48,7 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
     }
 
     // Handle any remaining partial block
-    final int remaining = dataSize % 64;
+    final int remaining = inputSize % 64;
     if (remaining != 0) {
       chacha20Block(counter + fullBlocks, keystream, _state, workingState);
       final int start = fullBlocks * 64;
@@ -112,32 +112,14 @@ Uint32List initState(Uint32List key, Uint32List nonce) {
 
 /// The ChaCha20 block function is the core of the ChaCha20 algorithm.
 /// The function transforms a ChaCha state by running multiple quarter rounds.
-///
-/// The inputs to ChaCha20 are:
-///
-/// - A 256-bit key, treated as a concatenation of eight 32-bit little-endian integers.
-/// - A 96-bit nonce, treated as a concatenation of three 32-bit little-endian integers
-/// - A 32-bit block count parameter, treated as a 32-bit little-endian integer.
-///
-///The output is 64 random-looking bytes.
 void chacha20Block(int counter, Uint8List keystream, Uint32List state, Uint32List workingState) {
-  // Initialize the state with the counter
   state[12] = counter;
-
-  // Flip endianness only if the system is big-endian
   _ensureLittleEndian(state);
-
-  // Initialize working state
   workingState.setRange(0, 16, state);
-
-  // Perform block function
   _chacha20BlockRounds(workingState);
-
-  // Add the original state to the working state
   for (int i = 0; i < 16; i++) {
     workingState[i] += state[i];
   }
-
   keystream.setRange(0, 64, workingState.buffer.asUint8List());
 }
 
