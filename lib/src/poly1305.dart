@@ -28,12 +28,12 @@ class Poly1305 extends Converter<List<int>, List<int>> {
     return Poly1305._(block, r, s, p, accumulator);
   }
 
+  BigInt _accumulator;
+
   final BigInt _r;
   final BigInt _s;
   final BigInt _p;
   final Uint8List _block;
-
-  BigInt _accumulator;
 
   @override
   Uint8List convert(List<int> input) {
@@ -76,27 +76,23 @@ class Poly1305 extends Converter<List<int>, List<int>> {
 
   @override
   Sink<List<int>> startChunkedConversion(Sink<List<int>> sink) {
-    return _Poly1305Sink(this, outSink: sink);
+    return _Poly1305Sink(this, sink);
   }
 }
 
 class _Poly1305Sink implements Sink<List<int>> {
-  _Poly1305Sink(
-    this._converter, {
-    required Sink<List<int>> outSink,
-  }) : _outSink = outSink;
+  const _Poly1305Sink(this._converter, this._outputSink);
 
   final Poly1305 _converter;
-  final Sink<List<int>> _outSink;
+  final Sink<List<int>> _outputSink;
 
   @override
   void add(List<int> chunk) => _converter._process(chunk);
 
   @override
-  void close() {
-    _outSink.add(_converter._finalize());
-    _outSink.close();
-  }
+  void close() => _outputSink
+    ..add(_converter._finalize())
+    ..close();
 }
 
 /// Clamp function as specified in RFC 8439.
