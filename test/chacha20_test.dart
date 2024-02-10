@@ -14,13 +14,13 @@ void main() {
       final Uint32List key = parseBlockHexString(testVector['key']!).buffer.asUint32List();
       final Uint32List nonce = parseBlockHexString(testVector['nonce']!).buffer.asUint32List();
       final int counter = testVector['counter']!;
+      final Uint8List expected = parseBlockHexString(testVector['keyStream']!);
 
       final Uint32List state = initState(key, nonce);
       final Uint8List keystream = Uint8List(64);
       final Uint32List workingState = Uint32List(16);
 
       chacha20Block(counter, keystream, state, workingState);
-      final Uint8List expected = parseBlockHexString(testVector['keyStream']!);
 
       expect(keystream.length, equals(64));
       expect(keystream, equals(expected));
@@ -34,10 +34,10 @@ void main() {
       final Uint8List nonce = parseBlockHexString(testVector['nonce']!);
       final Uint8List plaintext = parseBlockHexString(testVector['plaintext']!);
       final int counter = testVector['counter']!;
+      final Uint8List expected = parseBlockHexString(testVector['ciphertext']!);
 
       final ChaCha20 chacha20 = ChaCha20(key, nonce, counter);
       final Uint8List result = chacha20.convert(plaintext);
-      final Uint8List expected = parseBlockHexString(testVector['ciphertext']!);
 
       expect(plaintext.length, equals(result.length));
       expect(plaintext != result, isTrue);
@@ -56,15 +56,13 @@ void main() {
 
       final BytesBuilder outputs = BytesBuilder();
       final StreamController<Uint8List> streamController = StreamController<Uint8List>();
-
       streamController.stream.listen((Uint8List chunk) => outputs.add(chunk));
 
       final ChaCha20 chacha20 = ChaCha20(key, nonce, counter);
       final Sink<List<int>> inputSink = chacha20.startChunkedConversion(streamController.sink);
 
-      const int chunkSize = 64;
-
       int offset = 0;
+      const int chunkSize = 64;
       while (offset < plaintext.length) {
         final int end =
             (offset + chunkSize < plaintext.length) ? offset + chunkSize : plaintext.length;

@@ -12,9 +12,9 @@ void main() {
     test('Poly1305 Key Generation Using ChaCha20 Test Vector $i', () {
       final Uint8List key = parseBlockHexString(testVector['key']!);
       final Uint8List nonce = parseBlockHexString(testVector['nonce']!);
+      final Uint8List expected = parseBlockHexString(testVector['otk']!);
 
       final Uint8List result = ChaCha20Poly1305.generateKey(key, nonce);
-      final Uint8List expected = parseBlockHexString(testVector['otk']!);
 
       expect(result, equals(expected));
     });
@@ -27,16 +27,15 @@ void main() {
       final Uint8List nonce = parseBlockHexString(testVector['nonce']!);
       final Uint8List data = parseBlockHexString(testVector['plaintext']!);
       final Uint8List aad = parseBlockHexString(testVector['aad']!);
+      final Uint8List expectedTag = parseBlockHexString(testVector['tag']!);
+      final Uint8List expected = parseBlockHexString(testVector['ciphertext']!);
 
       final Uint8List result = ChaCha20Poly1305.encrypt(key, nonce, data, aad);
 
-      final Uint8List ciphertext1 = Uint8List.view(result.buffer, 0, result.length - 16);
-      final Uint8List expectedCiphertext = parseBlockHexString(testVector['ciphertext']!);
-
+      final Uint8List ciphertext = Uint8List.view(result.buffer, 0, result.length - 16);
       final Uint8List tag = Uint8List.view(result.buffer, result.length - 16);
-      final Uint8List expectedTag = parseBlockHexString(testVector['tag']!);
 
-      expect(ciphertext1, equals(expectedCiphertext));
+      expect(ciphertext, equals(expected));
       expect(tag, equals(expectedTag));
     });
   }

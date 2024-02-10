@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:chacha/src/poly1305.dart';
 import 'package:test/test.dart';
@@ -12,10 +13,44 @@ void main() {
     test('Poly1305 Message Authentication Code Test Vector $i', () {
       final Uint8List key = parseBlockHexString(testVector['key']!);
       final Uint8List message = parseBlockHexString(testVector['message']!);
-
-      final Uint8List result = Poly1305(key).convert(message);
       final Uint8List expected = parseBlockHexString(testVector['tag']!);
 
+      final Uint8List result = Poly1305(key).convert(message);
+
+      expect(result.length, equals(16));
+      expect(result, equals(expected));
+    });
+  }
+
+  for (int i = 0; i < poly1305MacTestVectors.length; i++) {
+    final Poly1305MacTestVector testVector = poly1305MacTestVectors[i];
+    test('Poly1305 Stream Message Authentication Code Test Vector $i', () async {
+      final Uint8List key = parseBlockHexString(testVector['key']!);
+      final Uint8List message = parseBlockHexString(testVector['message']!);
+      final Uint8List expected = parseBlockHexString(testVector['tag']!);
+
+      final BytesBuilder outputs = BytesBuilder();
+      final StreamController<Uint8List> streamController = StreamController<Uint8List>();
+      streamController.stream.listen((Uint8List chunk) => outputs.add(chunk));
+
+      final Poly1305 poly1305 = Poly1305(key);
+      final Sink<List<int>> inputSink = poly1305.startChunkedConversion(streamController.sink);
+
+      int offset = 0;
+      const int chunkSize = 64;
+      while (offset < message.length) {
+        final int end = (offset + chunkSize < message.length) ? offset + chunkSize : message.length;
+        final Uint8List chunk = Uint8List.sublistView(message, offset, end);
+        inputSink.add(chunk);
+        offset += chunkSize;
+      }
+
+      inputSink.close();
+      await streamController.close();
+
+      final Uint8List result = outputs.toBytes();
+
+      expect(result.length, equals(expected.length));
       expect(result.length, equals(16));
       expect(result, equals(expected));
     });
