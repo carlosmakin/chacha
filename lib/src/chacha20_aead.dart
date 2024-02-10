@@ -68,6 +68,26 @@ abstract class ChaCha20Poly1305 {
     // Decrypt the data using ChaCha20
     return ChaCha20(key, nonce, 1).convert(ciphertext);
   }
+
+  /// Verifies the integrity and authenticity of a message using its Poly1305 MAC.
+  ///
+  /// Accepts the key used to generate the MAC, the message, and the MAC to be verified.
+  /// Use this to prevent timing attacks during MAC verification.
+  static bool verifyMac(Uint8List key, Uint8List message, Uint8List mac) {
+    final Uint8List computedMac = Poly1305(key).convert(message);
+
+    // Return false immediately if lengths differ, as the lists can't be equal.
+    if (computedMac.length != mac.length) return false;
+
+    int result = 0;
+    // Compare elements using XOR; accumulate any differences in `result`.
+    for (int i = 0; i < computedMac.length; i++) {
+      result |= (computedMac[i] ^ mac[i]);
+    }
+
+    // If `result` is 0, all elements matched; otherwise, at least one pair differed.
+    return result == 0;
+  }
 }
 
 Uint8List _buildMacData(Uint8List bytes, Uint8List? aad) {
