@@ -12,7 +12,7 @@ class Poly1305 extends Converter<List<int>, List<int>> {
   ///
   /// Accepts a 256-bit key for message integrity and authenticity.
   factory Poly1305(Uint8List key) {
-    if (key.length < 16) throw ArgumentError('Invalid key');
+    if (key.length != 32) throw ArgumentError('Invalid key');
 
     BigInt accumulator = BigInt.zero;
     final BigInt r = _leBytesToBigInt(_clamp(key.sublist(0, 16)));
