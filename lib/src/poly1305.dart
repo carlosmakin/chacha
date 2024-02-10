@@ -66,9 +66,6 @@ class Poly1305 extends Converter<List<int>, List<int>> {
       final BigInt n = _leBytesToBigInt(_block);
       _accumulator = (_accumulator + n) * _r % _p;
     }
-
-    // Zero out the block for security
-    _block.fillRange(0, 17, 0);
   }
 
   Uint8List _finalize() {
@@ -164,24 +161,4 @@ Uint8List _bigIntTo16LeBytes(BigInt num) {
     bytes[i] = (num >> (8 * i) & mask).toInt();
   }
   return bytes;
-}
-
-/// Verifies the integrity and authenticity of a message using its Poly1305 MAC.
-///
-/// Accepts the key used to generate the MAC, the message, and the MAC to be verified.
-/// Use this to prevent timing attacks during MAC verification.
-bool verifyMac(Uint8List key, Uint8List message, Uint8List mac) {
-  final Uint8List computedMac = Poly1305(key).convert(message);
-
-  // Return false immediately if lengths differ, as the lists can't be equal.
-  if (computedMac.length != mac.length) return false;
-
-  int result = 0;
-  // Compare elements using XOR; accumulate any differences in `result`.
-  for (int i = 0; i < computedMac.length; i++) {
-    result |= (computedMac[i] ^ mac[i]);
-  }
-
-  // If `result` is 0, all elements matched; otherwise, at least one pair differed.
-  return result == 0;
 }
