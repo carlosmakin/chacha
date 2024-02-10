@@ -62,29 +62,29 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
 
   @override
   Sink<List<int>> startChunkedConversion(Sink<List<int>> sink) {
-    return _ChaCha20Sink(this, outSink: sink);
+    return _ChaCha20Sink(this, sink);
   }
 }
 
 class _ChaCha20Sink implements Sink<List<int>> {
   _ChaCha20Sink(
-    this._converter, {
-    required Sink<List<int>> outSink,
-  })  : _outSink = outSink,
-        _counter = _converter._counter;
+    this._converter,
+    this._outputSink,
+  ) : _counter = _converter._counter;
+
+  int _counter;
 
   final ChaCha20 _converter;
-  final Sink<List<int>> _outSink;
-  int _counter;
+  final Sink<List<int>> _outputSink;
 
   @override
   void add(List<int> chunk) {
-    _outSink.add(_converter.convert(chunk, counter: _counter));
+    _outputSink.add(_converter.convert(chunk, counter: _counter));
     _counter += (chunk.length / 64).ceil();
   }
 
   @override
-  void close() => _outSink.close();
+  void close() => _outputSink.close();
 }
 
 // Initializes the state with the constants, key, and nonce
