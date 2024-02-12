@@ -106,44 +106,11 @@ Uint8List _clamp(Uint8List r) {
 /// Converts a list of bytes in little-endian order to a BigInt.
 /// In little-endian, the least significant byte is at the lowest index.
 BigInt _leBytesToBigInt(Uint8List bytes) {
-  // Initialize variables for mixed approach
-  int intLow = 0;
-  int intMid = 0;
-  int intHigh = 0;
-
-  // Accumulate the first 7 bytes into 'intLow'
-  intLow |= bytes[0];
-  intLow |= bytes[1] << 8;
-  intLow |= bytes[2] << 16;
-  intLow |= bytes[3] << 24;
-  intLow |= bytes[4] << 32;
-  intLow |= bytes[5] << 40;
-  intLow |= bytes[6] << 48;
-
-  // Accumulate the next 7 bytes into 'intMid'
-  intMid |= bytes[7];
-  intMid |= bytes[8] << 8;
-  intMid |= bytes[9] << 16;
-  intMid |= bytes[10] << 24;
-  intMid |= bytes[11] << 32;
-  intMid |= bytes[12] << 40;
-  intMid |= bytes[13] << 48;
-
-  // Accumulate the last 3 bytes into 'intHigh'
-  intHigh |= bytes[14];
-  intHigh |= bytes[15] << 8;
-  if (bytes.length == 17) intHigh |= bytes[16] << 16;
-
-  // Initialize BigInts for final assembly
-  BigInt bigIntLow = BigInt.from(intLow);
-  BigInt bigIntMid = BigInt.from(intMid);
-  BigInt bigIntHigh = BigInt.from(intHigh);
-
-  // Shift up 'bigIntMid' and 'bigIntHigh' to make space
-  bigIntLow |= (bigIntMid <<= 56);
-  bigIntLow |= (bigIntHigh <<= 112);
-
-  return bigIntLow;
+  BigInt result = BigInt.zero;
+  for (int i = 7; i < bytes.length; i++) {
+    result |= BigInt.from(bytes[i]) << (8 * i);
+  }
+  return result;
 }
 
 /// Convert a BigInt to a list of 16 bytes in little-endian order.
