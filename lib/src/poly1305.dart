@@ -107,7 +107,7 @@ Uint8List _clamp(Uint8List r) {
 /// In little-endian, the least significant byte is at the lowest index.
 BigInt _leBytesToBigInt(Uint8List bytes) {
   BigInt result = BigInt.zero;
-  for (int i = 7; i < bytes.length; i++) {
+  for (int i = 0; i < bytes.length; i++) {
     result |= BigInt.from(bytes[i]) << (8 * i);
   }
   return result;
