@@ -22,7 +22,7 @@ void main() {
 
   for (int i = 0; i < chachaPoly1305TestVectors.length; i++) {
     final Poly1305TestVector testVector = chachaPoly1305TestVectors[i];
-    test('Poly1305 Key Generation Using ChaCha20 Test Vector $i', () {
+    test('ChaCha20Poly1305 Encryption Test Vector $i', () {
       final Uint8List key = parseBlockHexString(testVector['key']!);
       final Uint8List nonce = parseBlockHexString(testVector['nonce']!);
       final Uint8List data = parseBlockHexString(testVector['plaintext']!);
