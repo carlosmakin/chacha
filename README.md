@@ -59,18 +59,76 @@ RFC 8439 standardizes the algorithms and provides comprehensive guidelines for t
 
 ## Usage Examples
 
-### Real-World Use Case: Secure File Encryption
+### Real-World Use Case: Secure Data Encryption/Decryption
 
-**Scenario**: Encrypting a sensitive document using ChaCha20.
+**Scenario**: Encrypting and decrypting sensitive data using ChaCha20.
 
 ```dart
 import 'dart:typed_data';
-import 'package:chacha/chacha20.dart';
+import 'package:chacha/export.dart';
 
-void encryptFile(Uint8List fileData, Uint8List key, Uint8List nonce) {
-  ChaCha20 chacha20 = ChaCha20(key, nonce);
-  Uint8List encryptedData = chacha20.convert(fileData);
-  // Save or transmit encryptedData
+Uint8List encrypt({
+  required Uint8List plaintext,
+  required Uint8List key,
+  required Uint8List nonce,
+}) {
+  final ChaCha20 chacha20 = ChaCha20(key, nonce);
+  return chacha20.convert(plaintext);
+}
+
+Uint8List decrypt({
+  required Uint8List ciphertext,
+  required Uint8List key,
+  required Uint8List nonce,
+}) {
+  final ChaCha20 chacha20 = ChaCha20(key, nonce);
+  return chacha20.convert(ciphertext);
+}
+```
+
+### Real-World Use Case: Secure Data Encryption/Decryption Stream
+
+**Scenario**: Encrypting and decrypting sensitive data using ChaCha20 streaming.
+
+```dart
+import 'dart:typed_data';
+import 'package:chacha/export.dart';
+
+Stream<List<int>> encrypt({
+  required Stream<Uint8List> plaintext,
+  required Uint8List key,
+  required Uint8List nonce,
+}) {
+  final ChaCha20 chacha20 = ChaCha20(key, nonce);
+  return plaintext.transform(chacha20);
+}
+
+Stream<List<int>> decrypt({
+  required Stream<Uint8List> ciphertext,
+  required Uint8List key,
+  required Uint8List nonce,
+}) {
+  final ChaCha20 chacha20 = ChaCha20(key, nonce);
+  return ciphertext.transform(chacha20);
+}
+```
+
+### Real-World Use Case: Secure File Encryption/Decryption Stream
+
+**Scenario**: Encrypting and decrypting sensitive files using ChaCha20 streaming.
+
+```dart
+import 'dart:typed_data';
+import 'package:chacha/export.dart';
+
+void process({
+  required File inputFile,
+  required File outputFile,
+  required Uint8List key,
+  required Uint8List nonce,
+}) {
+  final ChaCha20 chacha20 = ChaCha20(key, nonce);
+  inputFile.openRead().transform(chacha20).pipe(outputFile.openWrite());
 }
 ```
 
