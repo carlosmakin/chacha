@@ -6,7 +6,7 @@ import 'dart:typed_data';
 /// A symmetric key cipher offering high performance with 256-bit keys and a 96-bit nonce. ChaCha20
 /// provides fast, secure encryption and decryption operations, featuring optional counter-based operation
 /// for varied cryptographic uses, particularly effective in streaming data encryption.
-class ChaCha20 extends Converter<List<int>, List<int>> {
+class ChaCha20 extends Converter<Uint8List, List<int>> {
   const ChaCha20._(this._counter, this._state);
 
   /// Converts data using ChaCha20 as per RFC 8439.
@@ -61,12 +61,12 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
   }
 
   @override
-  Sink<List<int>> startChunkedConversion(Sink<List<int>> sink) {
+  Sink<Uint8List> startChunkedConversion(Sink<List<int>> sink) {
     return _ChaCha20Sink(this, sink);
   }
 }
 
-class _ChaCha20Sink implements Sink<List<int>> {
+class _ChaCha20Sink implements Sink<Uint8List> {
   _ChaCha20Sink(
     this._converter,
     this._outputSink,
