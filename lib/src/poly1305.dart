@@ -6,29 +6,50 @@ import 'dart:typed_data';
 /// Implements a high-speed symmetric MAC algorithm using a 256-bit key. Poly1305 is designed to assure
 /// message integrity and authenticity, effectively guarding against tampering in secure communication channels.
 class Poly1305 extends Converter<List<int>, List<int>> {
-  Poly1305._(this._block, this._r, this._s, this._p, this._accumulator);
-
   /// Generates a Poly1305 Message Authentication Code (MAC) as per RFC 8439.
   ///
   /// Accepts a 256-bit key for message integrity and authenticity.
-  factory Poly1305(Uint8List key) {
+  Poly1305(Uint8List key) {
     if (key.length != 32) throw ArgumentError('Invalid key');
 
-    BigInt accumulator = BigInt.zero;
-    final BigInt r = _leBytesToBigInt(_clamp(key.sublist(0, 16)));
-    final BigInt s = _leBytesToBigInt(key.sublist(16, 32));
-    final BigInt p = (BigInt.one << 130) - BigInt.from(5);
-    final Uint8List block = Uint8List(17)..[16] = 1;
+    // Initialize r from the first 16 bytes of the key
+    _r0 = key[0] | key[1] << 8 | key[2] << 16 | key[3] << 24;
+    _r1 = key[3] >>> 2 | key[4] << 6 | key[5] << 14 | key[6] << 22;
+    _r2 = key[6] >>> 4 | key[7] << 4 | key[8] << 12 | key[9] << 20;
+    _r3 = key[9] >>> 6 | key[10] << 2 | key[11] << 10 | key[12] << 18;
+    _r4 = key[13] | key[14] << 8 | key[15] << 16;
 
-    return Poly1305._(block, r, s, p, accumulator);
+    // Clamp r according to RFC 8439 to prevent modular reduction weaknesses
+    _r0 &= 0x03ffffff;
+    _r1 &= 0x03ffff03;
+    _r2 &= 0x03ffc0ff;
+    _r3 &= 0x03f03fff;
+    _r4 &= 0x000fffff;
+
+    // Precompute 5*r values for optimization
+    _g1 = 5 * _r1;
+    _g2 = 5 * _r2;
+    _g3 = 5 * _r3;
+    _g4 = 5 * _r4;
+
+    // Initialize s from the second 16 bytes of the key
+    _s0 = key[16] | key[17] << 8 | key[18] << 16 | key[19] << 24;
+    _s1 = key[20] | key[21] << 8 | key[22] << 16 | key[23] << 24;
+    _s2 = key[24] | key[25] << 8 | key[26] << 16 | key[27] << 24;
+    _s3 = key[28] | key[29] << 8 | key[30] << 16 | key[31] << 24;
+
+    // Zero-initialize the accumulator
+    _a0 = _a1 = _a2 = _a3 = _a4 = 0;
   }
 
-  BigInt _accumulator;
+  // Internal state variables for r, s, accumulator, and g
+  int _r0 = 0, _r1 = 0, _r2 = 0, _r3 = 0, _r4 = 0;
+  int _s0 = 0, _s1 = 0, _s2 = 0, _s3 = 0;
+  int _a0 = 0, _a1 = 0, _a2 = 0, _a3 = 0, _a4 = 0;
+  int _g1 = 0, _g2 = 0, _g3 = 0, _g4 = 0;
 
-  final BigInt _r;
-  final BigInt _s;
-  final BigInt _p;
-  final Uint8List _block;
+  // A 17-byte block initialized with 0s, the last byte is set to 1
+  final Uint8List _block = Uint8List(17)..[16] = 1;
 
   @override
   Uint8List convert(List<int> input) {
@@ -43,8 +64,7 @@ class Poly1305 extends Converter<List<int>, List<int>> {
       for (int i = 0; i < 16; i++) {
         _block[i] = input[j * 16 + i];
       }
-      final BigInt n = _leBytesToBigInt(_block);
-      _accumulator = (_accumulator + n) * _r % _p;
+      _accumulate(_block);
     }
 
     // Handle any remaining partial block
@@ -58,15 +78,91 @@ class Poly1305 extends Converter<List<int>, List<int>> {
       for (int j = remaining + 1; j < 17; j++) {
         _block[j] = 0;
       }
-      final BigInt n = _leBytesToBigInt(_block);
-      _accumulator = (_accumulator + n) * _r % _p;
+      _accumulate(_block);
     }
   }
 
+  void _accumulate(Uint8List chunk) {
+    // Temporary variables for modular reduction
+    int d0, d1, d2, d3, d4;
+
+    // Add block to the accumulator: a += n
+    _a0 += chunk[0] | chunk[1] << 8 | chunk[2] << 16 | (chunk[3] & 0x03) << 24;
+    _a1 += chunk[3] >>> 2 | chunk[4] << 6 | chunk[5] << 14 | (chunk[6] & 0xF) << 22;
+    _a2 += chunk[6] >>> 4 | chunk[7] << 4 | chunk[8] << 12 | (chunk[9] & 0x3F) << 20;
+    _a3 += chunk[9] >>> 6 | chunk[10] << 2 | chunk[11] << 10 | chunk[12] << 18;
+    _a4 += chunk[13] | chunk[14] << 8 | chunk[15] << 16 | (chunk[16] & 0x03) << 24;
+
+    // Multiply the accumulator by r: a *= r
+    d0 = _a0 * _r0 + _a1 * _g4 + _a2 * _g3 + _a3 * _g2 + _a4 * _g1;
+    d1 = _a0 * _r1 + _a1 * _r0 + _a2 * _g4 + _a3 * _g3 + _a4 * _g2;
+    d2 = _a0 * _r2 + _a1 * _r1 + _a2 * _r0 + _a3 * _g4 + _a4 * _g3;
+    d3 = _a0 * _r3 + _a1 * _r2 + _a2 * _r1 + _a3 * _r0 + _a4 * _g4;
+    d4 = _a0 * _r4 + _a1 * _r3 + _a2 * _r2 + _a3 * _r1 + _a4 * _r0;
+
+    // Reduce accumulator by modulo 2^130 - 5: a %= p
+    d1 += d0 >>> 26;
+    d2 += d1 >>> 26;
+    d3 += d2 >>> 26;
+    d4 += d3 >>> 26;
+    _a0 = d0 & _mask26;
+    _a1 = d1 & _mask26;
+    _a2 = d2 & _mask26;
+    _a3 = d3 & _mask26;
+    _a4 = d4 & _mask26;
+    _a0 += 5 * (d4 >>> 26);
+    _a1 += _a0 >>> 26;
+    _a0 &= _mask26;
+  }
+
   Uint8List _finalize() {
+    // Zero out block buffer
     _block.fillRange(0, 17, 0);
-    _accumulator = (_accumulator + _s) % _p;
-    return _bigIntTo16LeBytes(_accumulator);
+
+    // Temporary variables final computations
+    int d0, d1, d2, d3, d4;
+
+    // Carry propagation
+    _a1 += _a0 >>> 26;
+    _a2 += _a1 >>> 26;
+    _a3 += _a2 >>> 26;
+    _a4 += _a3 >>> 26;
+    _a0 &= _mask26;
+    _a1 &= _mask26;
+    _a2 &= _mask26;
+    _a3 &= _mask26;
+
+    // Compute the difference of the accumulator and p: d = a - p
+    d0 = _a0 + 5;
+    d1 = _a1 + (d0 >>> 26);
+    d2 = _a2 + (d1 >>> 26);
+    d3 = _a3 + (d2 >>> 26);
+    d4 = _a4 + (d3 >>> 26) - (1 << 26);
+    d4 &= _mask32;
+
+    // Swap to d if a > prime mod (ensuring result stays within finite field bounds)
+    if ((d4 >>> 31) != 1) {
+      _a0 = d0 & _mask26;
+      _a1 = d1 & _mask26;
+      _a2 = d2 & _mask26;
+      _a3 = d3 & _mask26;
+      _a4 = d4 & _mask26;
+    }
+
+    // Serialize the result into 32-bit units, taking into account 128-bit overflow
+    _a0 = ((_a0) | (_a1 << 26)) & _mask32;
+    _a1 = ((_a1 >>> 6) | (_a2 << 20)) & _mask32;
+    _a2 = ((_a2 >>> 12) | (_a3 << 14)) & _mask32;
+    _a3 = ((_a3 >>> 18) | (_a4 << 8)) & _mask32;
+
+    // Add s to the accumulator for the final tag: a += s
+    _a0 += _s0;
+    _a1 += _s1 + (_a0 >>> 32);
+    _a2 += _s2 + (_a1 >>> 32);
+    _a3 += _s3 + (_a2 >>> 32);
+
+    // Return the final MAC as a Uint8List
+    return Uint32List.fromList(<int>[_a0, _a1, _a2, _a3]).buffer.asUint8List();
   }
 
   @override
@@ -90,35 +186,5 @@ class _Poly1305Sink implements Sink<List<int>> {
     ..close();
 }
 
-/// Clamp function as specified in RFC 8439.
-Uint8List _clamp(Uint8List r) {
-  r[3] &= 15;
-  r[7] &= 15;
-  r[11] &= 15;
-  r[15] &= 15;
-  r[4] &= 252;
-  r[8] &= 252;
-  r[12] &= 252;
-
-  return r;
-}
-
-/// Converts a list of bytes in little-endian order to a BigInt.
-/// In little-endian, the least significant byte is at the lowest index.
-BigInt _leBytesToBigInt(Uint8List bytes) {
-  BigInt result = BigInt.zero;
-  for (int i = 0; i < bytes.length; i++) {
-    result |= BigInt.from(bytes[i]) << (8 * i);
-  }
-  return result;
-}
-
-/// Convert a BigInt to a list of 16 bytes in little-endian order.
-Uint8List _bigIntTo16LeBytes(BigInt num) {
-  final Uint8List bytes = Uint8List(16);
-  final BigInt mask = BigInt.from(0xff);
-  for (int i = 0; i < 16; i++) {
-    bytes[i] = (num >> (8 * i) & mask).toInt();
-  }
-  return bytes;
-}
+const int _mask32 = 0xFFFFFFFF;
+const int _mask26 = 0x03FFFFFF;
