@@ -110,16 +110,6 @@ Uint32List initState(Uint32List key, Uint32List nonce) {
   return state;
 }
 
-/// The ChaCha20 block function is the core of the ChaCha20 algorithm.
-/// The function transforms a ChaCha state by running multiple quarter rounds.
-void chacha20Block(int counter, Uint8List keystream, Uint32List state, Uint32List workingState) {
-  state[12] = counter;
-  _ensureLittleEndian(state);
-  workingState.setRange(0, 16, state);
-  _chacha20BlockRounds(workingState, state);
-  keystream.setRange(0, 64, workingState.buffer.asUint8List());
-}
-
 /// Ensures that the elements of the given `Uint32List` are in little-endian format.
 /// If the host system is big-endian, this function flips the endianness of each element.
 void _ensureLittleEndian(Uint32List list) {
@@ -129,6 +119,16 @@ void _ensureLittleEndian(Uint32List list) {
   for (int i = 0; i < list.length; i++) {
     list[i] = byteData.getUint32(i * 4, Endian.little);
   }
+}
+
+/// The ChaCha20 block function is the core of the ChaCha20 algorithm.
+/// The function transforms a ChaCha state by running multiple quarter rounds.
+void chacha20Block(int counter, Uint8List keystream, Uint32List state, Uint32List workingState) {
+  state[12] = counter;
+  _ensureLittleEndian(state);
+  workingState.setRange(0, 16, state);
+  _chacha20BlockRounds(workingState, state);
+  keystream.setRange(0, 64, workingState.buffer.asUint8List());
 }
 
 /// Performs the core rounds of the ChaCha20 block cipher.
