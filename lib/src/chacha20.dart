@@ -116,10 +116,7 @@ void chacha20Block(int counter, Uint8List keystream, Uint32List state, Uint32Lis
   state[12] = counter;
   _ensureLittleEndian(state);
   workingState.setRange(0, 16, state);
-  _chacha20BlockRounds(workingState);
-  for (int i = 0; i < 16; i++) {
-    workingState[i] += state[i];
-  }
+  _chacha20BlockRounds(workingState, state);
   keystream.setRange(0, 64, workingState.buffer.asUint8List());
 }
 
@@ -143,23 +140,23 @@ void _ensureLittleEndian(Uint32List list) {
 /// The state undergoes 20 rounds in total, comprising 10 cycles of
 /// "column rounds" followed by "diagonal rounds." Each round updates the state
 /// using modular addition, bitwise XOR, and left rotation operations.
-void _chacha20BlockRounds(Uint32List state) {
-  int s0 = state[0];
-  int s1 = state[1];
-  int s2 = state[2];
-  int s3 = state[3];
-  int s4 = state[4];
-  int s5 = state[5];
-  int s6 = state[6];
-  int s7 = state[7];
-  int s8 = state[8];
-  int s9 = state[9];
-  int s10 = state[10];
-  int s11 = state[11];
-  int s12 = state[12];
-  int s13 = state[13];
-  int s14 = state[14];
-  int s15 = state[15];
+void _chacha20BlockRounds(Uint32List ws, Uint32List s) {
+  int s0 = ws[0];
+  int s1 = ws[1];
+  int s2 = ws[2];
+  int s3 = ws[3];
+  int s4 = ws[4];
+  int s5 = ws[5];
+  int s6 = ws[6];
+  int s7 = ws[7];
+  int s8 = ws[8];
+  int s9 = ws[9];
+  int s10 = ws[10];
+  int s11 = ws[11];
+  int s12 = ws[12];
+  int s13 = ws[13];
+  int s14 = ws[14];
+  int s15 = ws[15];
 
   for (int i = 0; i < 10; i++) {
     // Column rounds
@@ -248,22 +245,22 @@ void _chacha20BlockRounds(Uint32List state) {
   }
 
   // Save local variables back to state
-  state[0] = s0;
-  state[1] = s1;
-  state[2] = s2;
-  state[3] = s3;
-  state[4] = s4;
-  state[5] = s5;
-  state[6] = s6;
-  state[7] = s7;
-  state[8] = s8;
-  state[9] = s9;
-  state[10] = s10;
-  state[11] = s11;
-  state[12] = s12;
-  state[13] = s13;
-  state[14] = s14;
-  state[15] = s15;
+  ws[0] = s0 += s[0];
+  ws[1] = s1 += s[1];
+  ws[2] = s2 += s[2];
+  ws[3] = s3 += s[3];
+  ws[4] = s4 += s[4];
+  ws[5] = s5 += s[5];
+  ws[6] = s6 += s[6];
+  ws[7] = s7 += s[7];
+  ws[8] = s8 += s[8];
+  ws[9] = s9 += s[9];
+  ws[10] = s10 += s[10];
+  ws[11] = s11 += s[11];
+  ws[12] = s12 += s[12];
+  ws[13] = s13 += s[13];
+  ws[14] = s14 += s[14];
+  ws[15] = s15 += s[15];
 }
 
 /// Rotates the left bits of a 32-bit unsigned integer.
