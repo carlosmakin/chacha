@@ -9,7 +9,7 @@ class ChaCha20Benchmark extends BenchmarkBase {
   static void main() => ChaCha20Benchmark().report();
 
   @override
-  void run() => ChaCha20(key, nonce).convert(bytes);
+  void run() => chacha20.convert(bytes);
 }
 
 void main() => ChaCha20Benchmark.main();
@@ -17,6 +17,8 @@ void main() => ChaCha20Benchmark.main();
 final Uint8List bytes = Uint8List.fromList(
   <int>[for (int i = 0; i < 1000000; i++) i & 0xFF],
 );
+
+final ChaCha20 chacha20 = ChaCha20(key, nonce);
 
 final Uint8List key = Uint8List.fromList(<int>[
   00, 01, 02, 03, 04, 05, 06, 07, //
