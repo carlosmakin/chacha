@@ -127,7 +127,7 @@ void chacha20Block(int counter, Uint8List keystream, Uint32List state, Uint32Lis
   state[12] = counter;
   _ensureLittleEndian(state);
   workingState.setRange(0, 16, state);
-  _chacha20BlockRounds(workingState, state);
+  _chacha20BlockRounds(state, workingState);
   keystream.setRange(0, 64, workingState.buffer.asUint8List());
 }
 
@@ -140,7 +140,7 @@ void chacha20Block(int counter, Uint8List keystream, Uint32List state, Uint32Lis
 /// The state undergoes 20 rounds in total, comprising 10 cycles of
 /// "column rounds" followed by "diagonal rounds." Each round updates the state
 /// using modular addition, bitwise XOR, and left rotation operations.
-void _chacha20BlockRounds(Uint32List ws, Uint32List s) {
+void _chacha20BlockRounds(Uint32List s, Uint32List ws) {
   int s0 = ws[0];
   int s1 = ws[1];
   int s2 = ws[2];
@@ -244,7 +244,7 @@ void _chacha20BlockRounds(Uint32List ws, Uint32List s) {
     s4 = _rotateLeft32By7(s4 ^ s9);
   }
 
-  // Save local variables back to state
+  // Save local variables back to working state
   ws[0] = s0 += s[0];
   ws[1] = s1 += s[1];
   ws[2] = s2 += s[2];
