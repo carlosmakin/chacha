@@ -67,11 +67,11 @@ Benchmarks were conducted on a MacBook Pro with the following specifications:
 
 The benchmarks were performed by processing 1,000,000 bytes in each of 10 runs for each operation. The total runtimes and throughput are as follows:
 
-| Operation          | Total Runtime (µs)  | Throughput (MB/s) |
-|--------------------|---------------------|-------------------|
-| chacha20poly1305   | 64212.6875          | 155.76            |
-| chacha20           | 44921.0444          | 222.55            |
-| poly1305           | 16583.3443          | 602.87            |
+| Operation           | Total Runtime (µs)  | Throughput (MB/s) |
+|---------------------|---------------------|-------------------|
+| chacha20-poly1305   | 64212.6875          | 155.76            |
+| chacha20            | 44921.0444          | 222.55            |
+| poly1305            | 16583.3443          | 602.87            |
 
 These results demonstrate the efficiency of the implemented cryptographic algorithms, making them suitable for high-throughput applications.
 
