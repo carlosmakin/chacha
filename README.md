@@ -73,7 +73,7 @@ The benchmarks were performed by processing 1,000,000 bytes in each of 10 runs f
 | chacha20            | 44921.0444          | 222.55            |
 | poly1305            | 16583.3443          | 602.87            |
 
-These results demonstrate the efficiency of the implemented cryptographic algorithms, making them suitable for high-throughput applications.
+These results highlight the high efficiency of the algorithms, making them ideal for high-throughput applications.
 
 ## Usage Examples
 
