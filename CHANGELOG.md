@@ -2,6 +2,15 @@
 
 - Initial version.
 
-## 2.0.0
+## 1.1.0
 
 - Poly1305 optimization improvements.
+
+## 1.1.1
+
+- Minor file updates and renaming.
+
+## 1.1.2
+
+- Add depedency `benchmark_harness`
+- Add algorithm benchmarks.
