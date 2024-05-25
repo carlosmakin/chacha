@@ -3,16 +3,16 @@ import 'dart:typed_data';
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:chacha/export.dart';
 
-class ChaCha20Benchmark extends BenchmarkBase {
-  const ChaCha20Benchmark() : super('chacha20');
+class Poly1305Benchmark extends BenchmarkBase {
+  const Poly1305Benchmark() : super('poly1305');
 
-  static void main() => ChaCha20Benchmark().report();
+  static void main() => Poly1305Benchmark().report();
 
   @override
   void run() => poly1305.convert(bytes);
 }
 
-void main() => ChaCha20Benchmark.main();
+void main() => Poly1305Benchmark.main();
 
 final Uint8List bytes = Uint8List.fromList(
   <int>[for (int i = 0; i < 1000000; i++) i & 0xFF],
