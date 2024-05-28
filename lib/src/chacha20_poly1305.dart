@@ -34,25 +34,19 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
 
   @override
   Uint8List convert(List<int> input) {
-    if (_encrypt && input.length < 16) throw Exception('Invalid data length.');
-    final int inputLen = input.length;
-    final int outputLen = _encrypt ? inputLen + 16 : inputLen - 16;
+    final int len = input.length;
+    if (_encrypt && len < 16) throw Exception('Invalid data length.');
+    final Uint8List buffer = Uint8List(_encrypt ? len + 16 : len - 16);
 
-    final Uint8List buffer = Uint8List(outputLen);
+    final Uint8List cipher = _encrypt
+        ? Uint8List.sublistView(buffer..setAll(0, _chacha20.convert(input)), 0, len)
+        : Uint8List.sublistView(buffer..setRange(0, len - 16, input), 0, len - 16);
 
-    if (_encrypt) {
-      buffer.setRange(0, inputLen, _chacha20.convert(input));
-      final Uint8List cipher = Uint8List.sublistView(buffer, 0, inputLen);
-      final Uint8List mac = _poly1305.convert(_buildMacData(_aad, cipher));
-      buffer.setRange(inputLen, outputLen, mac);
-      return buffer;
-    }
+    final Uint8List mac = _poly1305.convert(_buildMacData(_aad, cipher));
+    if (_encrypt) return buffer..setAll(len, mac);
 
-    buffer.setRange(0, outputLen, input);
-    final List<int> tag = input.sublist(outputLen, inputLen);
-    final Uint8List mac = _poly1305.convert(_buildMacData(_aad, buffer));
+    final List<int> tag = input.sublist(len - 16);
     if (!verifyMac(mac, tag)) throw Exception('MAC verification failed.');
-
     return _chacha20.convert(buffer);
   }
 
@@ -83,7 +77,6 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
     final int aadPaddedLen = (aad.length + 15) & ~15;
     final int bytePaddedLen = (bytes.length + 15) & ~15;
     final int paddedLen = aadPaddedLen + bytePaddedLen;
-
     return Uint8List(paddedLen + 16)
       ..setAll(0, aad)
       ..setAll(aadPaddedLen, bytes)
