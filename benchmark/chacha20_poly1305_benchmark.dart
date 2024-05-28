@@ -9,7 +9,7 @@ class ChaCha20Poly1305Benchmark extends BenchmarkBase {
   static void main() => ChaCha20Poly1305Benchmark().report();
 
   @override
-  void run() => ChaCha20Poly1305.encrypt(key, nonce, bytes);
+  void run() => ChaCha20Poly1305(null, key, nonce, true).convert(bytes);
 }
 
 void main() => ChaCha20Poly1305Benchmark.main();

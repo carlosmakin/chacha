@@ -174,7 +174,7 @@ import 'dart:typed_data';
 import 'package:chacha/chacha20_poly1305.dart';
 
 Uint8List secureCommunication(Uint8List message, Uint8List key, Uint8List nonce) {
-  Uint8List encryptedMessage = ChaCha20Poly1305.encrypt(key, nonce, message);
+  Uint8List encryptedMessage = ChaCha20Poly1305(null, key, nonce, true).convert(message);
   // Send encryptedMessage securely
 }
 ```

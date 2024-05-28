@@ -30,11 +30,13 @@ void main() {
       final Uint8List expectedTag = parseBlockHexString(testVector['tag']!);
       final Uint8List expected = parseBlockHexString(testVector['ciphertext']!);
 
-      final Uint8List result = ChaCha20Poly1305.encrypt(key, nonce, data, aad);
+      final Uint8List result = ChaCha20Poly1305(aad, key, nonce, true).convert(data);
+      final Uint8List result2 = ChaCha20Poly1305(aad, key, nonce, false).convert(result);
 
       final Uint8List ciphertext = Uint8List.view(result.buffer, 0, result.length - 16);
       final Uint8List tag = Uint8List.view(result.buffer, result.length - 16);
 
+      expect(result2, equals(data));
       expect(ciphertext, equals(expected));
       expect(tag, equals(expectedTag));
     });

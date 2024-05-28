@@ -14,3 +14,7 @@
 
 - Add depedency `benchmark_harness`
 - Add algorithm benchmarks.
+
+## 2.0.0
+
+- **Breaking Change**: Migrate `chacha20-poly1305` to converter.
