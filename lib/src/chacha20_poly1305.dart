@@ -42,21 +42,17 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
 
     if (_encrypt) {
       data.setRange(0, inputLen, _chacha20.convert(input));
-      data.setRange(
-        inputLen,
-        outputLen,
-        _poly1305.convert(
-          _buildMacData(_aad, data.buffer.asUint8List(0, inputLen)),
-        ),
-      );
+      final Uint8List cipher = data.buffer.asUint8List(0, inputLen);
+      final Uint8List mac = _poly1305.convert(_buildMacData(_aad, cipher));
+      data.setRange(inputLen, outputLen, mac);
       return data;
     }
 
     data.setRange(0, outputLen, input);
     final List<int> tag = input.sublist(outputLen, inputLen);
-    if (!verifyMac(_poly1305.convert(_buildMacData(_aad, data)), tag)) {
-      throw Exception('MAC verification failed.');
-    }
+    final Uint8List mac = _poly1305.convert(_buildMacData(_aad, data));
+    if (!verifyMac(mac, tag)) throw Exception('MAC verification failed.');
+
     return _chacha20.convert(data);
   }
 
@@ -83,28 +79,15 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
     return result == 0;
   }
 
-  static Uint8List _buildMacData(Uint8List? aad, Uint8List bytes) {
-    aad ??= Uint8List(0);
-
-    final int aadLen = aad.length;
-    final int aadPaddedLen = (aadLen + 15) & ~15;
-    final int byteLen = bytes.length;
-    final int bytePaddedLen = (byteLen + 15) & ~15;
+  static Uint8List _buildMacData(Uint8List aad, Uint8List bytes) {
+    final int aadPaddedLen = (aad.length + 15) & ~15;
+    final int bytePaddedLen = (bytes.length + 15) & ~15;
     final int paddedLen = aadPaddedLen + bytePaddedLen;
 
-    final Uint8List macData = Uint8List(paddedLen + 16);
-
-    macData.setRange(0, aadLen, aad);
-    macData.setRange(aadPaddedLen, aadPaddedLen + byteLen, bytes);
-    macData.setRange(
-      paddedLen,
-      paddedLen + 16,
-      (ByteData(16)
-            ..setUint64(0, aadLen, Endian.little)
-            ..setUint64(8, byteLen, Endian.little))
-          .buffer
-          .asUint8List(),
-    );
-    return macData;
+    return Uint8List(paddedLen + 16)
+      ..setAll(0, aad)
+      ..setAll(aadPaddedLen, bytes)
+      ..buffer.asByteData(paddedLen).setUint64(0, aad.length, Endian.little)
+      ..buffer.asByteData(paddedLen).setUint64(8, bytes.length, Endian.little);
   }
 }
