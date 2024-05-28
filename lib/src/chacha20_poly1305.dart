@@ -36,7 +36,7 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
   Uint8List convert(List<int> input) {
     if (_encrypt && input.length < 16) throw Exception('Invalid data length.');
     final int inputLen = input.length;
-    final int outputLen = _encrypt ? input.length + 16 : input.length - 16;
+    final int outputLen = _encrypt ? inputLen + 16 : inputLen - 16;
 
     final Uint8List data = Uint8List(outputLen);
 
