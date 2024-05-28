@@ -20,7 +20,7 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
     if (nonce.length != 12) throw ArgumentError('Invalid nonce');
 
     return ChaCha20Poly1305._(
-      aad,
+      aad ?? Uint8List(0),
       ChaCha20(key, nonce, 1),
       Poly1305(generateKey(key, nonce)),
       encrypt,
@@ -28,7 +28,7 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
   }
 
   final bool _encrypt;
-  final Uint8List? _aad;
+  final Uint8List _aad;
   final ChaCha20 _chacha20;
   final Poly1305 _poly1305;
 
@@ -85,17 +85,20 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
 
   static Uint8List _buildMacData(Uint8List? aad, Uint8List bytes) {
     aad ??= Uint8List(0);
-    final int byteLen = bytes.length;
-    final int bytePadLen = (16 - (byteLen % 16)) % 16;
+
     final int aadLen = aad.length;
-    final int aadPadLen = (16 - (aadLen % 16)) % 16;
-    final Uint8List macData = Uint8List(
-      (aadLen + aadPadLen) + (byteLen + bytePadLen) + 16,
-    );
-    macData.setAll(0, aad);
-    macData.setAll((aadLen + aadPadLen), bytes);
-    macData.setAll(
-      (aadLen + aadPadLen) + (byteLen + bytePadLen),
+    final int aadPaddedLen = (aadLen + 15) & ~15;
+    final int byteLen = bytes.length;
+    final int bytePaddedLen = (byteLen + 15) & ~15;
+    final int paddedLen = aadPaddedLen + bytePaddedLen;
+
+    final Uint8List macData = Uint8List(paddedLen + 16);
+
+    macData.setRange(0, aadLen, aad);
+    macData.setRange(aadPaddedLen, aadPaddedLen + byteLen, bytes);
+    macData.setRange(
+      paddedLen,
+      paddedLen + 16,
       (ByteData(16)
             ..setUint64(0, aadLen, Endian.little)
             ..setUint64(8, byteLen, Endian.little))
