@@ -38,22 +38,22 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
     final int inputLen = input.length;
     final int outputLen = _encrypt ? inputLen + 16 : inputLen - 16;
 
-    final Uint8List data = Uint8List(outputLen);
+    final Uint8List buffer = Uint8List(outputLen);
 
     if (_encrypt) {
-      data.setRange(0, inputLen, _chacha20.convert(input));
-      final Uint8List cipher = data.buffer.asUint8List(0, inputLen);
+      buffer.setRange(0, inputLen, _chacha20.convert(input));
+      final Uint8List cipher = Uint8List.sublistView(buffer, 0, inputLen);
       final Uint8List mac = _poly1305.convert(_buildMacData(_aad, cipher));
-      data.setRange(inputLen, outputLen, mac);
-      return data;
+      buffer.setRange(inputLen, outputLen, mac);
+      return buffer;
     }
 
-    data.setRange(0, outputLen, input);
+    buffer.setRange(0, outputLen, input);
     final List<int> tag = input.sublist(outputLen, inputLen);
-    final Uint8List mac = _poly1305.convert(_buildMacData(_aad, data));
+    final Uint8List mac = _poly1305.convert(_buildMacData(_aad, buffer));
     if (!verifyMac(mac, tag)) throw Exception('MAC verification failed.');
 
-    return _chacha20.convert(data);
+    return _chacha20.convert(buffer);
   }
 
   /// Generates a Poly1305 key using the ChaCha20 block function with a zero counter as per RFC 8439.
