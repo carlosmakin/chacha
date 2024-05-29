@@ -1,7 +1,7 @@
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:chacha/export.dart';
 
-import 'benchmark_utilities.dart';
+import 'utilities.dart';
 
 class ChaCha20Poly1305Benchmark extends BenchmarkBase {
   const ChaCha20Poly1305Benchmark() : super('chacha20-poly1305');
