@@ -1,8 +1,4 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
-import 'package:chacha/src/chacha20.dart';
-import 'package:chacha/src/poly1305.dart';
+part of '../export.dart';
 
 /// ChaCha20-Poly1305 Authenticated Encryption with Associated Data (AEAD) (RFC 8439).
 ///
@@ -42,7 +38,17 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
         ? Uint8List.sublistView(buffer..setAll(0, _chacha20.convert(input)), 0, len)
         : Uint8List.sublistView(buffer..setRange(0, len - 16, input), 0, len - 16);
 
-    final Uint8List mac = _poly1305.convert(_buildMacData(_aad, cipher));
+    final int aadPaddedLen = (_aad.length + 15) & ~15;
+    final int cipherPaddedLen = (cipher.length + 15) & ~15;
+
+    _poly1305
+      .._process(Uint8List(aadPaddedLen)..setAll(0, _aad))
+      .._process(Uint8List(cipherPaddedLen)..setAll(0, cipher))
+      .._process(Uint8List(16)
+        ..buffer.asByteData(0).setUint64(0, _aad.length, Endian.little)
+        ..buffer.asByteData(0).setUint64(8, cipher.length, Endian.little));
+
+    final Uint8List mac = _poly1305._finalize();
     if (_encrypt) return buffer..setAll(len, mac);
 
     final List<int> tag = input.sublist(len - 16);
@@ -71,16 +77,5 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
       result |= (m1[i] ^ m2[i]);
     }
     return result == 0;
-  }
-
-  static Uint8List _buildMacData(Uint8List aad, Uint8List bytes) {
-    final int aadPaddedLen = (aad.length + 15) & ~15;
-    final int bytePaddedLen = (bytes.length + 15) & ~15;
-    final int paddedLen = aadPaddedLen + bytePaddedLen;
-    return Uint8List(paddedLen + 16)
-      ..setAll(0, aad)
-      ..setAll(aadPaddedLen, bytes)
-      ..buffer.asByteData(paddedLen).setUint64(0, aad.length, Endian.little)
-      ..buffer.asByteData(paddedLen).setUint64(8, bytes.length, Endian.little);
   }
 }

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
-import 'package:chacha/src/chacha20.dart';
+import 'package:chacha/export.dart';
 import 'package:test/test.dart';
 
 import 'test_parser.dart';
