@@ -43,10 +43,12 @@ class BenchmarkEmitter implements ScoreEmitter {
     final double microseconds = value / numRuns;
     final double seconds = microseconds / 1e6;
     final double throughput = (numBytes / oneMB) / seconds;
-    print('Benchmark Results for $testName:\n'
-        '  Runs         : $numRuns x\n'
-        '  Size         : $numBytes bytes\n'
-        '  Runtime      : ${microseconds.toStringAsFixed(2)} us\n'
-        '  Throughput   : ${throughput.toStringAsFixed(2)} MB/s\n');
+    print(
+      'Benchmark Results for $testName:\n'
+      '  Runs         : $numRuns x\n'
+      '  Size         : $numBytes bytes\n'
+      '  Runtime      : ${microseconds.toStringAsFixed(2)} us\n'
+      '  Throughput   : ${throughput.toStringAsFixed(2)} MB/s\n',
+    );
   }
 }
