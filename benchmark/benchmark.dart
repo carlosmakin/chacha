@@ -40,11 +40,13 @@ class BenchmarkEmitter implements ScoreEmitter {
 
   @override
   void emit(String testName, double value) {
-    final double seconds = value / (1e6 * numRuns);
+    final double microseconds = value / numRuns;
+    final double seconds = microseconds / 1e6;
     final double throughput = (numBytes / oneMB) / seconds;
-    print(
-      '$testName(runtime): ${value.toStringAsFixed(2)} us\n'
-      '$testName(throughput): ${throughput.toStringAsFixed(2)} MB/s.\n',
-    );
+    print('Benchmark Results for $testName:\n'
+        '  Runs         : $numRuns x\n'
+        '  Size         : $numBytes bytes\n'
+        '  Runtime      : ${microseconds.toStringAsFixed(2)} us\n'
+        '  Throughput   : ${throughput.toStringAsFixed(2)} MB/s\n');
   }
 }
