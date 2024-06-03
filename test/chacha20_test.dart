@@ -11,16 +11,13 @@ void main() {
   for (int i = 0; i < chaha20BlockTestVectors.length; i++) {
     final ChaCha20TestVector testVector = chaha20BlockTestVectors[i];
     test('The ChaCha20 Block Functions Test Vector ${(i + 1)}', () {
-      final Uint32List key = parseBlockHexString(testVector['key']!).buffer.asUint32List();
-      final Uint32List nonce = parseBlockHexString(testVector['nonce']!).buffer.asUint32List();
+      final Uint8List key = parseBlockHexString(testVector['key']!);
+      final Uint8List nonce = parseBlockHexString(testVector['nonce']!);
       final int counter = testVector['counter']!;
       final Uint8List expected = parseBlockHexString(testVector['keyStream']!);
 
-      final Uint32List state = initState(key, nonce);
       final Uint8List keystream = Uint8List(64);
-      final Uint32List workingState = Uint32List(16);
-
-      chacha20Block(counter, keystream, state, workingState);
+      ChaCha20(key, nonce, counter).chacha20Block(counter, keystream);
 
       expect(keystream.length, equals(64));
       expect(keystream, equals(expected));

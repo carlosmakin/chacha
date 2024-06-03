@@ -104,14 +104,14 @@ class Poly1305 extends Converter<List<int>, List<int>> {
     d2 += d1 >>> 26;
     d3 += d2 >>> 26;
     d4 += d3 >>> 26;
-    _a0 = d0 & _mask26;
-    _a1 = d1 & _mask26;
-    _a2 = d2 & _mask26;
-    _a3 = d3 & _mask26;
-    _a4 = d4 & _mask26;
+    _a0 = d0 & mask26;
+    _a1 = d1 & mask26;
+    _a2 = d2 & mask26;
+    _a3 = d3 & mask26;
+    _a4 = d4 & mask26;
     _a0 += 5 * (d4 >>> 26);
     _a1 += _a0 >>> 26;
-    _a0 &= _mask26;
+    _a0 &= mask26;
   }
 
   Uint8List _finalize() {
@@ -126,10 +126,10 @@ class Poly1305 extends Converter<List<int>, List<int>> {
     _a2 += _a1 >>> 26;
     _a3 += _a2 >>> 26;
     _a4 += _a3 >>> 26;
-    _a0 &= _mask26;
-    _a1 &= _mask26;
-    _a2 &= _mask26;
-    _a3 &= _mask26;
+    _a0 &= mask26;
+    _a1 &= mask26;
+    _a2 &= mask26;
+    _a3 &= mask26;
 
     // Compute the difference of the accumulator and p: d = a - p
     d0 = _a0 + 5;
@@ -137,22 +137,22 @@ class Poly1305 extends Converter<List<int>, List<int>> {
     d2 = _a2 + (d1 >>> 26);
     d3 = _a3 + (d2 >>> 26);
     d4 = _a4 + (d3 >>> 26) - (1 << 26);
-    d4 &= _mask32;
+    d4 &= mask32;
 
     // Swap to d if a > prime mod (ensuring result stays within finite field bounds)
     if ((d4 >>> 31) != 1) {
-      _a0 = d0 & _mask26;
-      _a1 = d1 & _mask26;
-      _a2 = d2 & _mask26;
-      _a3 = d3 & _mask26;
-      _a4 = d4 & _mask26;
+      _a0 = d0 & mask26;
+      _a1 = d1 & mask26;
+      _a2 = d2 & mask26;
+      _a3 = d3 & mask26;
+      _a4 = d4 & mask26;
     }
 
     // Serialize the result into 32-bit units, taking into account 128-bit overflow
-    _a0 = ((_a0) | (_a1 << 26)) & _mask32;
-    _a1 = ((_a1 >>> 6) | (_a2 << 20)) & _mask32;
-    _a2 = ((_a2 >>> 12) | (_a3 << 14)) & _mask32;
-    _a3 = ((_a3 >>> 18) | (_a4 << 8)) & _mask32;
+    _a0 = ((_a0) | (_a1 << 26)) & mask32;
+    _a1 = ((_a1 >>> 6) | (_a2 << 20)) & mask32;
+    _a2 = ((_a2 >>> 12) | (_a3 << 14)) & mask32;
+    _a3 = ((_a3 >>> 18) | (_a4 << 8)) & mask32;
 
     // Add s to the accumulator for the final tag: a += s
     _a0 += _s0;
@@ -184,6 +184,3 @@ class _Poly1305Sink implements Sink<List<int>> {
     ..add(_converter._finalize())
     ..close();
 }
-
-const int _mask32 = 0xFFFFFFFF;
-const int _mask26 = 0x03FFFFFF;
