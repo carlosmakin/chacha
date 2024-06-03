@@ -1,16 +1,15 @@
 import 'dart:typed_data';
 
 import 'package:benchmark_harness/benchmark_harness.dart';
-import 'package:chacha/export.dart';
 
-part 'chacha20_benchmark.dart';
-part 'chacha20_poly1305_benchmark.dart';
-part 'poly1305_benchmark.dart';
+import 'chacha20_poly1305_benchmark.dart' as chachapoly;
+import 'chacha20_benchmark.dart' as chacha;
+import 'poly1305_benchmark.dart' as poly;
 
 void main() {
-  ChaCha20Poly1305Benchmark.main();
-  ChaCha20Benchmark.main();
-  Poly1305Benchmark.main();
+  chachapoly.ChaCha20Poly1305Benchmark.main();
+  chacha.main();
+  poly.main();
 }
 
 const int numRuns = 10;

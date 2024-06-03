@@ -1,4 +1,7 @@
-part of 'benchmark.dart';
+import 'package:benchmark_harness/benchmark_harness.dart';
+import 'package:chacha/export.dart';
+
+import 'benchmark.dart';
 
 class ChaCha20Benchmark extends BenchmarkBase {
   const ChaCha20Benchmark() : super('chacha20', emitter: emitter);
@@ -15,5 +18,7 @@ class ChaCha20Benchmark extends BenchmarkBase {
     }
   }
 }
+
+void main() => ChaCha20Benchmark.main();
 
 final ChaCha20 chacha20 = ChaCha20(key, nonce);
