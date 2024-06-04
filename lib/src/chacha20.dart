@@ -78,114 +78,114 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
 
   /// Performs the core rounds of the ChaCha20 block cipher.
   void _chacha20BlockRounds(Uint32List s, Uint32List ws) {
-    int s00 = ws[00], s01 = ws[01], s02 = ws[02], s03 = ws[03];
-    int s04 = ws[04], s05 = ws[05], s06 = ws[06], s07 = ws[07];
-    int s08 = ws[08], s09 = ws[09], s10 = ws[10], s11 = ws[11];
-    int s12 = ws[12], s13 = ws[13], s14 = ws[14], s15 = ws[15];
+    int ws00 = ws[00], ws01 = ws[01], ws02 = ws[02], ws03 = ws[03];
+    int ws04 = ws[04], ws05 = ws[05], ws06 = ws[06], ws07 = ws[07];
+    int ws08 = ws[08], ws09 = ws[09], ws10 = ws[10], ws11 = ws[11];
+    int ws12 = ws[12], ws13 = ws[13], ws14 = ws[14], ws15 = ws[15];
 
     for (int i = 0; i < 10; i++) {
       // Column rounds
 
       // Quarter round on (0, 4, 8, 12)
-      s00 = mask32 & (s00 + s04);
-      s12 = rotateLeft32By16(s12 ^ s00);
-      s08 = mask32 & (s08 + s12);
-      s04 = rotateLeft32By12(s04 ^ s08);
-      s00 = mask32 & (s00 + s04);
-      s12 = rotateLeft32By8(s12 ^ s00);
-      s08 = mask32 & (s08 + s12);
-      s04 = rotateLeft32By7(s04 ^ s08);
+      ws00 = mask32 & (ws00 + ws04);
+      ws12 = rotateLeft32By16(ws12 ^ ws00);
+      ws08 = mask32 & (ws08 + ws12);
+      ws04 = rotateLeft32By12(ws04 ^ ws08);
+      ws00 = mask32 & (ws00 + ws04);
+      ws12 = rotateLeft32By8(ws12 ^ ws00);
+      ws08 = mask32 & (ws08 + ws12);
+      ws04 = rotateLeft32By7(ws04 ^ ws08);
 
       // Quarter round on (1, 5, 9, 13)
-      s01 = mask32 & (s01 + s05);
-      s13 = rotateLeft32By16(s13 ^ s01);
-      s09 = mask32 & (s09 + s13);
-      s05 = rotateLeft32By12(s05 ^ s09);
-      s01 = mask32 & (s01 + s05);
-      s13 = rotateLeft32By8(s13 ^ s01);
-      s09 = mask32 & (s09 + s13);
-      s05 = rotateLeft32By7(s05 ^ s09);
+      ws01 = mask32 & (ws01 + ws05);
+      ws13 = rotateLeft32By16(ws13 ^ ws01);
+      ws09 = mask32 & (ws09 + ws13);
+      ws05 = rotateLeft32By12(ws05 ^ ws09);
+      ws01 = mask32 & (ws01 + ws05);
+      ws13 = rotateLeft32By8(ws13 ^ ws01);
+      ws09 = mask32 & (ws09 + ws13);
+      ws05 = rotateLeft32By7(ws05 ^ ws09);
 
       // Quarter round on (2, 6, 10, 14)
-      s02 = mask32 & (s02 + s06);
-      s14 = rotateLeft32By16(s14 ^ s02);
-      s10 = mask32 & (s10 + s14);
-      s06 = rotateLeft32By12(s06 ^ s10);
-      s02 = mask32 & (s02 + s06);
-      s14 = rotateLeft32By8(s14 ^ s02);
-      s10 = mask32 & (s10 + s14);
-      s06 = rotateLeft32By7(s06 ^ s10);
+      ws02 = mask32 & (ws02 + ws06);
+      ws14 = rotateLeft32By16(ws14 ^ ws02);
+      ws10 = mask32 & (ws10 + ws14);
+      ws06 = rotateLeft32By12(ws06 ^ ws10);
+      ws02 = mask32 & (ws02 + ws06);
+      ws14 = rotateLeft32By8(ws14 ^ ws02);
+      ws10 = mask32 & (ws10 + ws14);
+      ws06 = rotateLeft32By7(ws06 ^ ws10);
 
       // Quarter round on (3, 7, 11, 15)
-      s03 = mask32 & (s03 + s07);
-      s15 = rotateLeft32By16(s15 ^ s03);
-      s11 = mask32 & (s11 + s15);
-      s07 = rotateLeft32By12(s07 ^ s11);
-      s03 = mask32 & (s03 + s07);
-      s15 = rotateLeft32By8(s15 ^ s03);
-      s11 = mask32 & (s11 + s15);
-      s07 = rotateLeft32By7(s07 ^ s11);
+      ws03 = mask32 & (ws03 + ws07);
+      ws15 = rotateLeft32By16(ws15 ^ ws03);
+      ws11 = mask32 & (ws11 + ws15);
+      ws07 = rotateLeft32By12(ws07 ^ ws11);
+      ws03 = mask32 & (ws03 + ws07);
+      ws15 = rotateLeft32By8(ws15 ^ ws03);
+      ws11 = mask32 & (ws11 + ws15);
+      ws07 = rotateLeft32By7(ws07 ^ ws11);
 
       // Diagonal rounds
 
       // Quarter round on (0, 5, 10, 15)
-      s00 = mask32 & (s00 + s05);
-      s15 = rotateLeft32By16(s15 ^ s00);
-      s10 = mask32 & (s10 + s15);
-      s05 = rotateLeft32By12(s05 ^ s10);
-      s00 = mask32 & (s00 + s05);
-      s15 = rotateLeft32By8(s15 ^ s00);
-      s10 = mask32 & (s10 + s15);
-      s05 = rotateLeft32By7(s05 ^ s10);
+      ws00 = mask32 & (ws00 + ws05);
+      ws15 = rotateLeft32By16(ws15 ^ ws00);
+      ws10 = mask32 & (ws10 + ws15);
+      ws05 = rotateLeft32By12(ws05 ^ ws10);
+      ws00 = mask32 & (ws00 + ws05);
+      ws15 = rotateLeft32By8(ws15 ^ ws00);
+      ws10 = mask32 & (ws10 + ws15);
+      ws05 = rotateLeft32By7(ws05 ^ ws10);
 
       // Quarter round on (1, 6, 11, 12)
-      s01 = mask32 & (s01 + s06);
-      s12 = rotateLeft32By16(s12 ^ s01);
-      s11 = mask32 & (s11 + s12);
-      s06 = rotateLeft32By12(s06 ^ s11);
-      s01 = mask32 & (s01 + s06);
-      s12 = rotateLeft32By8(s12 ^ s01);
-      s11 = mask32 & (s11 + s12);
-      s06 = rotateLeft32By7(s06 ^ s11);
+      ws01 = mask32 & (ws01 + ws06);
+      ws12 = rotateLeft32By16(ws12 ^ ws01);
+      ws11 = mask32 & (ws11 + ws12);
+      ws06 = rotateLeft32By12(ws06 ^ ws11);
+      ws01 = mask32 & (ws01 + ws06);
+      ws12 = rotateLeft32By8(ws12 ^ ws01);
+      ws11 = mask32 & (ws11 + ws12);
+      ws06 = rotateLeft32By7(ws06 ^ ws11);
 
       // Quarter round on (2, 7, 8, 13)
-      s02 = mask32 & (s02 + s07);
-      s13 = rotateLeft32By16(s13 ^ s02);
-      s08 = mask32 & (s08 + s13);
-      s07 = rotateLeft32By12(s07 ^ s08);
-      s02 = mask32 & (s02 + s07);
-      s13 = rotateLeft32By8(s13 ^ s02);
-      s08 = mask32 & (s08 + s13);
-      s07 = rotateLeft32By7(s07 ^ s08);
+      ws02 = mask32 & (ws02 + ws07);
+      ws13 = rotateLeft32By16(ws13 ^ ws02);
+      ws08 = mask32 & (ws08 + ws13);
+      ws07 = rotateLeft32By12(ws07 ^ ws08);
+      ws02 = mask32 & (ws02 + ws07);
+      ws13 = rotateLeft32By8(ws13 ^ ws02);
+      ws08 = mask32 & (ws08 + ws13);
+      ws07 = rotateLeft32By7(ws07 ^ ws08);
 
       // Quarter round on (3, 4, 9, 14)
-      s03 = mask32 & (s03 + s04);
-      s14 = rotateLeft32By16(s14 ^ s03);
-      s09 = mask32 & (s09 + s14);
-      s04 = rotateLeft32By12(s04 ^ s09);
-      s03 = mask32 & (s03 + s04);
-      s14 = rotateLeft32By8(s14 ^ s03);
-      s09 = mask32 & (s09 + s14);
-      s04 = rotateLeft32By7(s04 ^ s09);
+      ws03 = mask32 & (ws03 + ws04);
+      ws14 = rotateLeft32By16(ws14 ^ ws03);
+      ws09 = mask32 & (ws09 + ws14);
+      ws04 = rotateLeft32By12(ws04 ^ ws09);
+      ws03 = mask32 & (ws03 + ws04);
+      ws14 = rotateLeft32By8(ws14 ^ ws03);
+      ws09 = mask32 & (ws09 + ws14);
+      ws04 = rotateLeft32By7(ws04 ^ ws09);
     }
 
     // Save local variables back to working state
-    ws[0] = s00 += s[0];
-    ws[1] = s01 += s[1];
-    ws[2] = s02 += s[2];
-    ws[3] = s03 += s[3];
-    ws[4] = s04 += s[4];
-    ws[5] = s05 += s[5];
-    ws[6] = s06 += s[6];
-    ws[7] = s07 += s[7];
-    ws[8] = s08 += s[8];
-    ws[9] = s09 += s[9];
-    ws[10] = s10 += s[10];
-    ws[11] = s11 += s[11];
-    ws[12] = s12 += s[12];
-    ws[13] = s13 += s[13];
-    ws[14] = s14 += s[14];
-    ws[15] = s15 += s[15];
+    ws[0] = ws00 += s[0];
+    ws[1] = ws01 += s[1];
+    ws[2] = ws02 += s[2];
+    ws[3] = ws03 += s[3];
+    ws[4] = ws04 += s[4];
+    ws[5] = ws05 += s[5];
+    ws[6] = ws06 += s[6];
+    ws[7] = ws07 += s[7];
+    ws[8] = ws08 += s[8];
+    ws[9] = ws09 += s[9];
+    ws[10] = ws10 += s[10];
+    ws[11] = ws11 += s[11];
+    ws[12] = ws12 += s[12];
+    ws[13] = ws13 += s[13];
+    ws[14] = ws14 += s[14];
+    ws[15] = ws15 += s[15];
   }
 }
 
