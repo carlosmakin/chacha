@@ -14,8 +14,7 @@ int rotateLeft32By7(int value) => (mask32 & (value << 7)) | (value >> 25);
 /// If the host system is big-endian, this function flips the endianness of each element.
 void ensureLittleEndian(Uint32List list) {
   if (Endian.host == Endian.little) return;
-
-  final ByteData byteData = ByteData.view(list.buffer, list.offsetInBytes, list.lengthInBytes);
+  final ByteData byteData = list.buffer.asByteData();
   for (int i = 0; i < list.length; i++) {
     list[i] = byteData.getUint32(i * 4, Endian.little);
   }
