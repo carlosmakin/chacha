@@ -6,7 +6,7 @@ part of '../export.dart';
 /// provides fast, secure encryption and decryption operations, featuring optional counter-based operation
 /// for varied cryptographic uses, particularly effective in streaming data encryption.
 class ChaCha20 extends Converter<List<int>, List<int>> {
-  const ChaCha20._(this._state);
+  const ChaCha20._(this._state, this._keystream);
 
   /// Converts data using ChaCha20 as per RFC 8439.
   ///
@@ -26,34 +26,34 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
     state.setAll(13, nonce.buffer.asUint32List());
     ensureLittleEndian(state);
 
-    return ChaCha20._(state);
+    return ChaCha20._(state, state.buffer.asUint8List(64));
   }
 
   final Uint32List _state;
+  final Uint8List _keystream;
 
   @override
   Uint8List convert(List<int> input) {
-    final Uint8List keystream = Uint8List(64);
     final Uint8List output = Uint8List(input.length);
 
     // Process all full 64-byte blocks
     final int fullBlock = input.length & ~63;
     for (int j = 0; j < fullBlock; ++_state[12]) {
-      chacha20Block(keystream);
+      _chacha20BlockRounds();
       for (int i = 0; i < 64; i += 4, j += 4) {
-        output[j] = input[j] ^ keystream[i];
-        output[j + 1] = input[j + 1] ^ keystream[i + 1];
-        output[j + 2] = input[j + 2] ^ keystream[i + 2];
-        output[j + 3] = input[j + 3] ^ keystream[i + 3];
+        output[j] = input[j] ^ _keystream[i];
+        output[j + 1] = input[j + 1] ^ _keystream[i + 1];
+        output[j + 2] = input[j + 2] ^ _keystream[i + 2];
+        output[j + 3] = input[j + 3] ^ _keystream[i + 3];
       }
     }
 
     // Handle any remaining partial block
     final int partialBlock = input.length % 64;
     if (partialBlock != 0) {
-      chacha20Block(keystream);
+      _chacha20BlockRounds();
       for (int i = 0; i < partialBlock; ++i) {
-        output[fullBlock + i] = input[fullBlock + i] ^ keystream[i];
+        output[fullBlock + i] = input[fullBlock + i] ^ _keystream[i];
       }
     }
 
@@ -66,9 +66,9 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
   }
 
   /// The ChaCha20 block function is the core of the ChaCha20 algorithm.
-  void chacha20Block(Uint8List keystream) {
+  Uint8List chacha20Block() {
     _chacha20BlockRounds();
-    keystream.setAll(0, _state.buffer.asUint8List(64));
+    return Uint8List.fromList(_keystream);
   }
 
   /// Performs the core rounds of the ChaCha20 block cipher.

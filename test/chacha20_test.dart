@@ -16,8 +16,7 @@ void main() {
       final int counter = testVector['counter']!;
       final Uint8List expected = parseBlockHexString(testVector['keyStream']!);
 
-      final Uint8List keystream = Uint8List(64);
-      ChaCha20(key, nonce, counter).chacha20Block(keystream);
+      final Uint8List keystream = ChaCha20(key, nonce, counter).chacha20Block();
 
       expect(keystream.length, equals(64));
       expect(keystream, equals(expected));

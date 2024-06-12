@@ -60,8 +60,7 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
   ///
   /// Accepts a 256-bit key and a 96-bit nonce.
   static Uint8List generateKey(Uint8List key, Uint8List nonce) {
-    final Uint8List keystream = Uint8List(64);
-    ChaCha20(key, nonce, 0).chacha20Block(keystream);
+    final Uint8List keystream = ChaCha20(key, nonce, 0).chacha20Block();
     return keystream.sublist(0, 32);
   }
 
