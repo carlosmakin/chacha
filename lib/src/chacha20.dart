@@ -165,22 +165,22 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
     }
 
     // Save local variables back to working state
-    _state[16] = ws00 += _state[0];
-    _state[17] = ws01 += _state[1];
-    _state[18] = ws02 += _state[2];
-    _state[19] = ws03 += _state[3];
-    _state[20] = ws04 += _state[4];
-    _state[21] = ws05 += _state[5];
-    _state[22] = ws06 += _state[6];
-    _state[23] = ws07 += _state[7];
-    _state[24] = ws08 += _state[8];
-    _state[25] = ws09 += _state[9];
-    _state[26] = ws10 += _state[10];
-    _state[27] = ws11 += _state[11];
-    _state[28] = ws12 += _state[12];
-    _state[29] = ws13 += _state[13];
-    _state[30] = ws14 += _state[14];
-    _state[31] = ws15 += _state[15];
+    _state[16] = ws00 + _state[0];
+    _state[17] = ws01 + _state[1];
+    _state[18] = ws02 + _state[2];
+    _state[19] = ws03 + _state[3];
+    _state[20] = ws04 + _state[4];
+    _state[21] = ws05 + _state[5];
+    _state[22] = ws06 + _state[6];
+    _state[23] = ws07 + _state[7];
+    _state[24] = ws08 + _state[8];
+    _state[25] = ws09 + _state[9];
+    _state[26] = ws10 + _state[10];
+    _state[27] = ws11 + _state[11];
+    _state[28] = ws12 + _state[12];
+    _state[29] = ws13 + _state[13];
+    _state[30] = ws14 + _state[14];
+    _state[31] = ws15 + _state[15];
   }
 }
 
