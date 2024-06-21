@@ -7,7 +7,7 @@ import 'chacha20_benchmark.dart' as chacha;
 import 'poly1305_benchmark.dart' as poly;
 
 void main() {
-  chachapoly.ChaCha20Poly1305Benchmark.main();
+  chachapoly.main();
   chacha.main();
   poly.main();
 }
