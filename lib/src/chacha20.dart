@@ -15,7 +15,7 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
     if (key.length != 32) throw ArgumentError('Invalid key');
     if (nonce.length != 12) throw ArgumentError('Invalid nonce');
 
-    // Initializes the state with the constants, key, and nonce
+    // Initializes the state with the constants, key, and nonce.
     final Uint32List state = Uint32List(32);
     state[0] = 0x61707865;
     state[1] = 0x3320646e;
@@ -36,7 +36,7 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
   Uint8List convert(List<int> input) {
     final Uint8List output = Uint8List.fromList(input);
 
-    // Process all full 64-byte blocks
+    // Process all full 64-byte blocks.
     final int fullBlock = input.length & ~63;
     for (int j = 0; j < fullBlock; ++_state[12]) {
       _chacha20BlockRounds();
@@ -48,7 +48,7 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
       }
     }
 
-    // Handle any remaining partial block
+    // Handle any remaining partial block.
     final int partialBlock = input.length % 64;
     if (partialBlock != 0) {
       _chacha20BlockRounds();
