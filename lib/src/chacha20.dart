@@ -34,17 +34,17 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
 
   @override
   Uint8List convert(List<int> input) {
-    final Uint8List output = Uint8List(input.length);
+    final Uint8List output = Uint8List.fromList(input);
 
     // Process all full 64-byte blocks
     final int fullBlock = input.length & ~63;
     for (int j = 0; j < fullBlock; ++_state[12]) {
       _chacha20BlockRounds();
       for (int i = 0; i < 64; i += 4, j += 4) {
-        output[j] = input[j] ^ _keystream[i];
-        output[j + 1] = input[j + 1] ^ _keystream[i + 1];
-        output[j + 2] = input[j + 2] ^ _keystream[i + 2];
-        output[j + 3] = input[j + 3] ^ _keystream[i + 3];
+        output[j] ^= _keystream[i];
+        output[j + 1] ^= _keystream[i + 1];
+        output[j + 2] ^= _keystream[i + 2];
+        output[j + 3] ^= _keystream[i + 3];
       }
     }
 
@@ -53,7 +53,7 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
     if (partialBlock != 0) {
       _chacha20BlockRounds();
       for (int i = 0; i < partialBlock; ++i) {
-        output[fullBlock + i] = input[fullBlock + i] ^ _keystream[i];
+        output[fullBlock + i] ^= _keystream[i];
       }
     }
 
@@ -61,7 +61,8 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
   }
 
   @override
-  Sink<Uint8List> startChunkedConversion(Sink<List<int>> sink) {
+  ByteConversionSink startChunkedConversion(Sink<List<int>> sink) {
+    if (sink is! ByteConversionSink) sink = ByteConversionSink.from(sink);
     return _ChaCha20Sink(this, sink);
   }
 
@@ -184,16 +185,22 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
   }
 }
 
-class _ChaCha20Sink implements Sink<Uint8List> {
+class _ChaCha20Sink implements ByteConversionSink {
   _ChaCha20Sink(this._converter, this._outputSink);
 
   final ChaCha20 _converter;
-  final Sink<List<int>> _outputSink;
+  final ByteConversionSink _outputSink;
 
   @override
   void add(List<int> chunk) => _outputSink.add(
         _converter.convert(chunk),
       );
+
+  @override
+  void addSlice(List<int> chunk, int start, int end, bool isLast) {
+    _converter.convert(chunk.sublist(start, end));
+    if (isLast) close();
+  }
 
   @override
   void close() => _outputSink.close();
