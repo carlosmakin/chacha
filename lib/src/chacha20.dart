@@ -198,7 +198,7 @@ class _ChaCha20Sink implements ByteConversionSink {
 
   @override
   void addSlice(List<int> chunk, int start, int end, bool isLast) {
-    _converter.convert(chunk.sublist(start, end));
+    add(chunk.sublist(start, end));
     if (isLast) close();
   }
 
