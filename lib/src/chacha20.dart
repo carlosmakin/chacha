@@ -165,7 +165,7 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
       ws04 = rotateLeft32By7(ws04 ^ ws09);
     }
 
-    // Save local variables back to working state
+    // Save local variables back to working state.
     _state[16] = ws00 + _state[00];
     _state[17] = ws01 + _state[01];
     _state[18] = ws02 + _state[02];
