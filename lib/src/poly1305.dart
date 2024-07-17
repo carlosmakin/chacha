@@ -58,8 +58,8 @@ class Poly1305 extends Converter<List<int>, List<int>> {
   void _process(List<int> input) {
     // Process all full 16-byte blocks
     final int dataSize = input.length;
-    final int fullBlocks = dataSize ~/ 16;
-    for (int j = 0; j < fullBlocks; j++) {
+    final int numBlocks = dataSize ~/ 16;
+    for (int j = 0; j < numBlocks; j++) {
       for (int i = 0; i < 16; i++) {
         _block[i] = input[j * 16 + i];
       }
@@ -69,7 +69,7 @@ class Poly1305 extends Converter<List<int>, List<int>> {
     // Handle any remaining partial block
     final int remaining = dataSize % 16;
     if (remaining != 0) {
-      final int start = fullBlocks * 16;
+      final int start = numBlocks * 16;
       for (int j = 0; j < remaining; j++) {
         _block[j] = input[start + j];
       }
