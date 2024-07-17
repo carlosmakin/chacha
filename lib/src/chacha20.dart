@@ -37,8 +37,8 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
     final Uint8List output = Uint8List.fromList(input);
 
     // Process all full 64-byte blocks.
-    final int fullBlock = input.length & ~63;
-    for (int j = 0; j < fullBlock; ++_state[12]) {
+    final int numBlocks = input.length & ~63;
+    for (int j = 0; j < numBlocks; ++_state[12]) {
       _chacha20BlockRounds();
       for (int i = 0; i < 64; i += 4, j += 4) {
         output[j] ^= _keystream[i];
@@ -49,11 +49,11 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
     }
 
     // Handle any remaining partial block.
-    final int partialBlock = input.length % 64;
-    if (partialBlock != 0) {
+    final int remaining = input.length % 64;
+    if (remaining != 0) {
       _chacha20BlockRounds();
-      for (int i = 0; i < partialBlock; ++i) {
-        output[fullBlock + i] ^= _keystream[i];
+      for (int i = 0; i < remaining; ++i) {
+        output[numBlocks + i] ^= _keystream[i];
       }
     }
 
