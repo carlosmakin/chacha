@@ -17,10 +17,10 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
 
     // Initializes the state with the constants, key, and nonce.
     final Uint32List state = Uint32List(32);
-    state[0] = 0x61707865;
-    state[1] = 0x3320646e;
-    state[2] = 0x79622d32;
-    state[3] = 0x6b206574;
+    state[00] = 0x61707865;
+    state[01] = 0x3320646e;
+    state[02] = 0x79622d32;
+    state[03] = 0x6b206574;
     state[12] = counter;
     state.setAll(04, key.buffer.asUint32List());
     state.setAll(13, nonce.buffer.asUint32List());
@@ -166,16 +166,16 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
     }
 
     // Save local variables back to working state
-    _state[16] = ws00 + _state[0];
-    _state[17] = ws01 + _state[1];
-    _state[18] = ws02 + _state[2];
-    _state[19] = ws03 + _state[3];
-    _state[20] = ws04 + _state[4];
-    _state[21] = ws05 + _state[5];
-    _state[22] = ws06 + _state[6];
-    _state[23] = ws07 + _state[7];
-    _state[24] = ws08 + _state[8];
-    _state[25] = ws09 + _state[9];
+    _state[16] = ws00 + _state[00];
+    _state[17] = ws01 + _state[01];
+    _state[18] = ws02 + _state[02];
+    _state[19] = ws03 + _state[03];
+    _state[20] = ws04 + _state[04];
+    _state[21] = ws05 + _state[05];
+    _state[22] = ws06 + _state[06];
+    _state[23] = ws07 + _state[07];
+    _state[24] = ws08 + _state[08];
+    _state[25] = ws09 + _state[09];
     _state[26] = ws10 + _state[10];
     _state[27] = ws11 + _state[11];
     _state[28] = ws12 + _state[12];
