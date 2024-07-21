@@ -88,9 +88,9 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
       ws08 = mask32 & (ws08 + ws12);
       ws04 = rotateLeft32By12(ws04 ^ ws08);
       ws00 = mask32 & (ws00 + ws04);
-      ws12 = rotateLeft32By8(ws12 ^ ws00);
+      ws12 = rotateLeft32By08(ws12 ^ ws00);
       ws08 = mask32 & (ws08 + ws12);
-      ws04 = rotateLeft32By7(ws04 ^ ws08);
+      ws04 = rotateLeft32By07(ws04 ^ ws08);
 
       // Quarter round on (1, 5, 9, 13)
       ws01 = mask32 & (ws01 + ws05);
@@ -98,9 +98,9 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
       ws09 = mask32 & (ws09 + ws13);
       ws05 = rotateLeft32By12(ws05 ^ ws09);
       ws01 = mask32 & (ws01 + ws05);
-      ws13 = rotateLeft32By8(ws13 ^ ws01);
+      ws13 = rotateLeft32By08(ws13 ^ ws01);
       ws09 = mask32 & (ws09 + ws13);
-      ws05 = rotateLeft32By7(ws05 ^ ws09);
+      ws05 = rotateLeft32By07(ws05 ^ ws09);
 
       // Quarter round on (2, 6, 10, 14)
       ws02 = mask32 & (ws02 + ws06);
@@ -108,9 +108,9 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
       ws10 = mask32 & (ws10 + ws14);
       ws06 = rotateLeft32By12(ws06 ^ ws10);
       ws02 = mask32 & (ws02 + ws06);
-      ws14 = rotateLeft32By8(ws14 ^ ws02);
+      ws14 = rotateLeft32By08(ws14 ^ ws02);
       ws10 = mask32 & (ws10 + ws14);
-      ws06 = rotateLeft32By7(ws06 ^ ws10);
+      ws06 = rotateLeft32By07(ws06 ^ ws10);
 
       // Quarter round on (3, 7, 11, 15)
       ws03 = mask32 & (ws03 + ws07);
@@ -118,9 +118,9 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
       ws11 = mask32 & (ws11 + ws15);
       ws07 = rotateLeft32By12(ws07 ^ ws11);
       ws03 = mask32 & (ws03 + ws07);
-      ws15 = rotateLeft32By8(ws15 ^ ws03);
+      ws15 = rotateLeft32By08(ws15 ^ ws03);
       ws11 = mask32 & (ws11 + ws15);
-      ws07 = rotateLeft32By7(ws07 ^ ws11);
+      ws07 = rotateLeft32By07(ws07 ^ ws11);
 
       // Diagonal rounds
 
@@ -130,9 +130,9 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
       ws10 = mask32 & (ws10 + ws15);
       ws05 = rotateLeft32By12(ws05 ^ ws10);
       ws00 = mask32 & (ws00 + ws05);
-      ws15 = rotateLeft32By8(ws15 ^ ws00);
+      ws15 = rotateLeft32By08(ws15 ^ ws00);
       ws10 = mask32 & (ws10 + ws15);
-      ws05 = rotateLeft32By7(ws05 ^ ws10);
+      ws05 = rotateLeft32By07(ws05 ^ ws10);
 
       // Quarter round on (1, 6, 11, 12)
       ws01 = mask32 & (ws01 + ws06);
@@ -140,9 +140,9 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
       ws11 = mask32 & (ws11 + ws12);
       ws06 = rotateLeft32By12(ws06 ^ ws11);
       ws01 = mask32 & (ws01 + ws06);
-      ws12 = rotateLeft32By8(ws12 ^ ws01);
+      ws12 = rotateLeft32By08(ws12 ^ ws01);
       ws11 = mask32 & (ws11 + ws12);
-      ws06 = rotateLeft32By7(ws06 ^ ws11);
+      ws06 = rotateLeft32By07(ws06 ^ ws11);
 
       // Quarter round on (2, 7, 8, 13)
       ws02 = mask32 & (ws02 + ws07);
@@ -150,9 +150,9 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
       ws08 = mask32 & (ws08 + ws13);
       ws07 = rotateLeft32By12(ws07 ^ ws08);
       ws02 = mask32 & (ws02 + ws07);
-      ws13 = rotateLeft32By8(ws13 ^ ws02);
+      ws13 = rotateLeft32By08(ws13 ^ ws02);
       ws08 = mask32 & (ws08 + ws13);
-      ws07 = rotateLeft32By7(ws07 ^ ws08);
+      ws07 = rotateLeft32By07(ws07 ^ ws08);
 
       // Quarter round on (3, 4, 9, 14)
       ws03 = mask32 & (ws03 + ws04);
@@ -160,9 +160,9 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
       ws09 = mask32 & (ws09 + ws14);
       ws04 = rotateLeft32By12(ws04 ^ ws09);
       ws03 = mask32 & (ws03 + ws04);
-      ws14 = rotateLeft32By8(ws14 ^ ws03);
+      ws14 = rotateLeft32By08(ws14 ^ ws03);
       ws09 = mask32 & (ws09 + ws14);
-      ws04 = rotateLeft32By7(ws04 ^ ws09);
+      ws04 = rotateLeft32By07(ws04 ^ ws09);
     }
 
     // Save local variables back to working state.
