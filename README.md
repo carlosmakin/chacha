@@ -65,13 +65,13 @@ Benchmarks were conducted on a MacBook Pro with the following specifications:
 - **Chip**: Apple M2 Max
 - **Memory**: 32GB
 
-The benchmarks were performed by processing 1,000,000 bytes in each of 10 runs for each operation. The total runtimes and throughput are as follows:
+The benchmarks were performed by processing 1,000,000 bytes in each of 10 runs for each operation. The runtimes and throughput are as follows:
 
-| Operation           | Total Runtime (µs)  | Throughput (MB/s) |
+| Operation           | Runtime (µs)        | Throughput (MB/s) |
 |---------------------|---------------------|-------------------|
-| chacha20-poly1305   | 64212.6875          | 155.76            |
-| chacha20            | 44921.0444          | 222.55            |
-| poly1305            | 16583.3443          | 602.87            |
+| chacha20-poly1305   | 5884.89             | 169.93            |
+| chacha20            | 4206.36             | 237.74            |
+| poly1305            | 1405.16             | 711.66            |
 
 These results highlight the high efficiency of the algorithms, making them ideal for high-throughput applications.
 

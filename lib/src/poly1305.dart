@@ -56,27 +56,36 @@ class Poly1305 extends Converter<List<int>, List<int>> {
   }
 
   void _process(List<int> input) {
-    // Process all full 16-byte blocks
-    final int dataSize = input.length;
-    final int numBlocks = dataSize ~/ 16;
-    for (int j = 0; j < numBlocks; j++) {
-      for (int i = 0; i < 16; i++) {
-        _block[i] = input[j * 16 + i];
-      }
+    // Process all 16-byte chunks.
+    final int block = input.length & ~15;
+    for (int j = 0; j < block; j += 16) {
+      _block[00] = input[j];
+      _block[01] = input[j + 01];
+      _block[02] = input[j + 02];
+      _block[03] = input[j + 03];
+      _block[04] = input[j + 04];
+      _block[05] = input[j + 05];
+      _block[06] = input[j + 06];
+      _block[07] = input[j + 07];
+      _block[08] = input[j + 08];
+      _block[09] = input[j + 09];
+      _block[10] = input[j + 10];
+      _block[11] = input[j + 11];
+      _block[12] = input[j + 12];
+      _block[13] = input[j + 13];
+      _block[14] = input[j + 14];
+      _block[15] = input[j + 15];
       _accumulate(_block);
     }
 
-    // Handle any remaining partial block
-    final int remaining = dataSize % 16;
+    // Process any remaining bytes.
+    final int remaining = input.length % 16;
     if (remaining != 0) {
-      final int start = numBlocks * 16;
-      for (int j = 0; j < remaining; j++) {
-        _block[j] = input[start + j];
+      for (int j = 0; j < remaining; ++j) {
+        _block[j] = input[block + j];
       }
       _block[remaining] = 1;
-      for (int j = remaining + 1; j < 17; j++) {
-        _block[j] = 0;
-      }
+      _block.fillRange(remaining + 1, 17, 0);
       _accumulate(_block);
     }
   }
@@ -165,19 +174,26 @@ class Poly1305 extends Converter<List<int>, List<int>> {
   }
 
   @override
-  Sink<List<int>> startChunkedConversion(Sink<List<int>> sink) {
+  ByteConversionSink startChunkedConversion(Sink<List<int>> sink) {
+    if (sink is! ByteConversionSink) sink = ByteConversionSink.from(sink);
     return _Poly1305Sink(this, sink);
   }
 }
 
-class _Poly1305Sink implements Sink<List<int>> {
+class _Poly1305Sink implements ByteConversionSink {
   const _Poly1305Sink(this._converter, this._outputSink);
 
   final Poly1305 _converter;
-  final Sink<List<int>> _outputSink;
+  final ByteConversionSink _outputSink;
 
   @override
   void add(List<int> chunk) => _converter._process(chunk);
+
+  @override
+  void addSlice(List<int> chunk, int start, int end, bool isLast) {
+    add(chunk.sublist(start, end));
+    if (isLast) close();
+  }
 
   @override
   void close() => _outputSink

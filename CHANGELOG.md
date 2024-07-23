@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.4] - 2024-07-23
+
+### Changed
+- **Documentation Updates**: Updated `README.md` and `CHANGELOG.md` to include recent changes and enhancements.
+- **Performance Improvements**: Made significant updates to `chacha20.dart` and `poly1305.dart` for improved performance.
+
 ## [1.2.0] - 2024-05-27
 ### Added
 - **Benchmark Utilities**: Introduced `benchmark_utilities.dart` for enhanced performance testing and benchmarking.

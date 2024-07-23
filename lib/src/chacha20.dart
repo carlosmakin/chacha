@@ -38,14 +38,72 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
 
     // Process all 64-byte chunks.
     final int block = input.length & ~63;
-    for (int j = 0; j < block; ++_state[12]) {
+    for (int j = 0; j < block; j += 64, ++_state[12]) {
       _chacha20BlockRounds();
-      for (int i = 0; i < 64; i += 4, j += 4) {
-        output[j] ^= _keystream[i];
-        output[j + 1] ^= _keystream[i + 1];
-        output[j + 2] ^= _keystream[i + 2];
-        output[j + 3] ^= _keystream[i + 3];
-      }
+      output[j] ^= _keystream[00];
+      output[j + 01] ^= _keystream[01];
+      output[j + 02] ^= _keystream[02];
+      output[j + 03] ^= _keystream[03];
+      output[j + 04] ^= _keystream[04];
+      output[j + 05] ^= _keystream[05];
+      output[j + 06] ^= _keystream[06];
+      output[j + 07] ^= _keystream[07];
+      output[j + 08] ^= _keystream[08];
+      output[j + 09] ^= _keystream[09];
+      output[j + 10] ^= _keystream[10];
+      output[j + 11] ^= _keystream[11];
+      output[j + 12] ^= _keystream[12];
+      output[j + 13] ^= _keystream[13];
+      output[j + 14] ^= _keystream[14];
+      output[j + 15] ^= _keystream[15];
+      output[j + 16] ^= _keystream[16];
+      output[j + 17] ^= _keystream[17];
+      output[j + 18] ^= _keystream[18];
+      output[j + 19] ^= _keystream[19];
+      output[j + 20] ^= _keystream[20];
+      output[j + 21] ^= _keystream[21];
+      output[j + 22] ^= _keystream[22];
+      output[j + 23] ^= _keystream[23];
+      output[j + 24] ^= _keystream[24];
+      output[j + 25] ^= _keystream[25];
+      output[j + 26] ^= _keystream[26];
+      output[j + 27] ^= _keystream[27];
+      output[j + 28] ^= _keystream[28];
+      output[j + 29] ^= _keystream[29];
+      output[j + 30] ^= _keystream[30];
+      output[j + 31] ^= _keystream[31];
+      output[j + 32] ^= _keystream[32];
+      output[j + 33] ^= _keystream[33];
+      output[j + 34] ^= _keystream[34];
+      output[j + 35] ^= _keystream[35];
+      output[j + 36] ^= _keystream[36];
+      output[j + 37] ^= _keystream[37];
+      output[j + 38] ^= _keystream[38];
+      output[j + 39] ^= _keystream[39];
+      output[j + 40] ^= _keystream[40];
+      output[j + 41] ^= _keystream[41];
+      output[j + 42] ^= _keystream[42];
+      output[j + 43] ^= _keystream[43];
+      output[j + 44] ^= _keystream[44];
+      output[j + 45] ^= _keystream[45];
+      output[j + 46] ^= _keystream[46];
+      output[j + 47] ^= _keystream[47];
+      output[j + 48] ^= _keystream[48];
+      output[j + 49] ^= _keystream[49];
+      output[j + 50] ^= _keystream[50];
+      output[j + 51] ^= _keystream[51];
+      output[j + 52] ^= _keystream[52];
+      output[j + 53] ^= _keystream[53];
+      output[j + 54] ^= _keystream[54];
+      output[j + 55] ^= _keystream[55];
+      output[j + 56] ^= _keystream[56];
+      output[j + 57] ^= _keystream[57];
+      output[j + 58] ^= _keystream[58];
+      output[j + 59] ^= _keystream[59];
+      output[j + 60] ^= _keystream[60];
+      output[j + 61] ^= _keystream[61];
+      output[j + 62] ^= _keystream[62];
+      output[j + 63] ^= _keystream[63];
     }
 
     // Process any remaining bytes.
