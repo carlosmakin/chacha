@@ -60,8 +60,7 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
   ///
   /// Accepts a 256-bit key and a 96-bit nonce.
   static Uint8List generateKey(Uint8List key, Uint8List nonce) {
-    final Uint8List keystream = ChaCha20(key, nonce, 0).chacha20Block();
-    return keystream.sublist(0, 32);
+    return ChaCha20(key, nonce, 0).chacha20Block().sublist(0, 32);
   }
 
   /// Verifies the integrity and authenticity of a message using its Poly1305 MAC.
@@ -71,7 +70,7 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
   static bool verifyMac(List<int> m1, List<int> m2) {
     if (m1.length != m2.length) return false;
     int result = 0;
-    for (int i = 0; i < m1.length; i++) {
+    for (int i = 0; i < m1.length; ++i) {
       result |= (m1[i] ^ m2[i]);
     }
     return result == 0;
