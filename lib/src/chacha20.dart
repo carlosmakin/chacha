@@ -34,43 +34,42 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
 
   @override
   Uint8List convert(List<int> input) {
-    final Uint8List output = Uint8List.fromList(input);
-    final Uint32List buffer = output.buffer.asUint32List();
+    final Uint32List output = Uint8List.fromList(input).buffer.asUint32List();
 
     // Process all 64-byte chunks.
     final int block = input.length & ~63;
     for (int j = 0; j < block; j += 64, ++_state[12]) {
       _chacha20BlockRounds();
       final int i = j ~/ 4;
-      buffer[i] ^= _keystream[00];
-      buffer[i + 01] ^= _keystream[01];
-      buffer[i + 02] ^= _keystream[02];
-      buffer[i + 03] ^= _keystream[03];
-      buffer[i + 04] ^= _keystream[04];
-      buffer[i + 05] ^= _keystream[05];
-      buffer[i + 06] ^= _keystream[06];
-      buffer[i + 07] ^= _keystream[07];
-      buffer[i + 08] ^= _keystream[08];
-      buffer[i + 09] ^= _keystream[09];
-      buffer[i + 10] ^= _keystream[10];
-      buffer[i + 11] ^= _keystream[11];
-      buffer[i + 12] ^= _keystream[12];
-      buffer[i + 13] ^= _keystream[13];
-      buffer[i + 14] ^= _keystream[14];
-      buffer[i + 15] ^= _keystream[15];
+      output[i] ^= _keystream[00];
+      output[i + 01] ^= _keystream[01];
+      output[i + 02] ^= _keystream[02];
+      output[i + 03] ^= _keystream[03];
+      output[i + 04] ^= _keystream[04];
+      output[i + 05] ^= _keystream[05];
+      output[i + 06] ^= _keystream[06];
+      output[i + 07] ^= _keystream[07];
+      output[i + 08] ^= _keystream[08];
+      output[i + 09] ^= _keystream[09];
+      output[i + 10] ^= _keystream[10];
+      output[i + 11] ^= _keystream[11];
+      output[i + 12] ^= _keystream[12];
+      output[i + 13] ^= _keystream[13];
+      output[i + 14] ^= _keystream[14];
+      output[i + 15] ^= _keystream[15];
     }
 
     // Process any remaining bytes.
-    final int remaining = input.length % 64;
-    if (remaining != 0) {
+    if (input.length % 64 != 0) {
       _chacha20BlockRounds();
+      final Uint8List remaining = output.buffer.asUint8List(block);
       final Uint8List keystream = _state.buffer.asUint8List(64);
-      for (int i = 0; i < remaining; ++i) {
-        output[block + i] ^= keystream[i];
+      for (int i = 0; i < remaining.lengthInBytes; ++i) {
+        remaining[i] ^= keystream[i];
       }
     }
 
-    return output;
+    return output.buffer.asUint8List();
   }
 
   @override
