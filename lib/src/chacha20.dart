@@ -198,7 +198,7 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
 }
 
 class _ChaCha20Sink implements ByteConversionSink {
-  _ChaCha20Sink(this._converter, this._outputSink);
+  const _ChaCha20Sink(this._converter, this._outputSink);
 
   final ChaCha20 _converter;
   final ByteConversionSink _outputSink;
