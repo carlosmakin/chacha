@@ -52,10 +52,10 @@ class Poly1305 extends Converter<List<int>, List<int>> {
 
   @override
   Uint8List convert(List<int> input) {
-    return (this.._process(input))._finalize();
+    return (this..add(input)).close();
   }
 
-  void _process(List<int> input) {
+  void add(List<int> input) {
     // Process all 16-byte chunks.
     final int block = input.length & ~15;
     for (int j = 0; j < block; j += 16) {
@@ -123,7 +123,7 @@ class Poly1305 extends Converter<List<int>, List<int>> {
     _a0 &= mask26;
   }
 
-  Uint8List _finalize() {
+  Uint8List close() {
     // Zero out block buffer
     _block.fillRange(0, 17, 0);
 
@@ -187,7 +187,7 @@ class _Poly1305Sink implements ByteConversionSink {
   final ByteConversionSink _outputSink;
 
   @override
-  void add(List<int> chunk) => _converter._process(chunk);
+  void add(List<int> chunk) => _converter.add(chunk);
 
   @override
   void addSlice(List<int> chunk, int start, int end, bool isLast) {
@@ -197,6 +197,6 @@ class _Poly1305Sink implements ByteConversionSink {
 
   @override
   void close() => _outputSink
-    ..add(_converter._finalize())
+    ..add(_converter.close())
     ..close();
 }

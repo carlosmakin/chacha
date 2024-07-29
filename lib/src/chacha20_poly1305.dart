@@ -42,13 +42,13 @@ class ChaCha20Poly1305 extends Converter<List<int>, List<int>> {
     final int cipherPaddedLen = (cipher.length + 15) & ~15;
 
     _poly1305
-      .._process(Uint8List(aadPaddedLen)..setAll(0, _aad))
-      .._process(Uint8List(cipherPaddedLen)..setAll(0, cipher))
-      .._process(Uint8List(16)
+      ..add(Uint8List(aadPaddedLen)..setAll(0, _aad))
+      ..add(Uint8List(cipherPaddedLen)..setAll(0, cipher))
+      ..add(Uint8List(16)
         ..buffer.asByteData(0).setUint64(0, _aad.length, Endian.little)
         ..buffer.asByteData(0).setUint64(8, cipher.length, Endian.little));
 
-    final Uint8List mac = _poly1305._finalize();
+    final Uint8List mac = _poly1305.close();
     if (_encrypt) return buffer..setAll(len, mac);
 
     final List<int> tag = input.sublist(len - 16);
