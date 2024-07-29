@@ -26,50 +26,38 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
     state.setAll(13, nonce.buffer.asUint32List());
     ensureLittleEndian(state);
 
-    return ChaCha20._(state, state.buffer.asUint32List(64));
+    return ChaCha20._(state, state.buffer.asUint8List(64));
   }
 
   final Uint32List _state;
-  final Uint32List _keystream;
+  final Uint8List _keystream;
 
   @override
   Uint8List convert(List<int> input) {
-    final Uint32List output = Uint8List.fromList(input).buffer.asUint32List();
+    final Uint8List output = Uint8List.fromList(input);
 
     // Process all 64-byte chunks.
     final int block = input.length & ~63;
-    for (int j = 0; j < block; j += 64, ++_state[12]) {
+    for (int j = 0; j < block; ++_state[12]) {
       _chacha20BlockRounds();
-      final int i = j ~/ 4;
-      output[i] ^= _keystream[00];
-      output[i + 01] ^= _keystream[01];
-      output[i + 02] ^= _keystream[02];
-      output[i + 03] ^= _keystream[03];
-      output[i + 04] ^= _keystream[04];
-      output[i + 05] ^= _keystream[05];
-      output[i + 06] ^= _keystream[06];
-      output[i + 07] ^= _keystream[07];
-      output[i + 08] ^= _keystream[08];
-      output[i + 09] ^= _keystream[09];
-      output[i + 10] ^= _keystream[10];
-      output[i + 11] ^= _keystream[11];
-      output[i + 12] ^= _keystream[12];
-      output[i + 13] ^= _keystream[13];
-      output[i + 14] ^= _keystream[14];
-      output[i + 15] ^= _keystream[15];
-    }
-
-    // Process any remaining bytes.
-    if (input.length % 64 != 0) {
-      _chacha20BlockRounds();
-      final Uint8List remaining = output.buffer.asUint8List(block);
-      final Uint8List keystream = _state.buffer.asUint8List(64);
-      for (int i = 0; i < remaining.lengthInBytes; ++i) {
-        remaining[i] ^= keystream[i];
+      for (int i = 0; i < 64; i += 4, j += 4) {
+        output[j] ^= _keystream[i];
+        output[j + 01] ^= _keystream[i + 01];
+        output[j + 02] ^= _keystream[i + 02];
+        output[j + 03] ^= _keystream[i + 03];
       }
     }
 
-    return output.buffer.asUint8List();
+    // Process any remaining bytes.
+    final int remaining = input.length % 64;
+    if (remaining != 0) {
+      _chacha20BlockRounds();
+      for (int i = 0; i < remaining; ++i) {
+        output[block + i] ^= _keystream[i];
+      }
+    }
+
+    return output;
   }
 
   @override
@@ -81,7 +69,7 @@ class ChaCha20 extends Converter<List<int>, List<int>> {
   /// The ChaCha20 block function is the core of the ChaCha20 algorithm.
   Uint8List chacha20Block() {
     _chacha20BlockRounds();
-    return Uint8List.fromList(_keystream.buffer.asUint8List(64));
+    return Uint8List.fromList(_keystream);
   }
 
   /// Performs the core rounds of the ChaCha20 block cipher.
