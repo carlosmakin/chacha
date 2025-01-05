@@ -1,4 +1,8 @@
-part of '../export.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:chacha/src/chacha20.dart';
+import 'package:chacha/src/poly1305.dart';
 
 /// ChaCha20-Poly1305 Authenticated Encryption with Associated Data (AEAD) (RFC 8439).
 ///

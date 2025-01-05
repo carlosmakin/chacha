@@ -1,10 +1,20 @@
-part of '../export.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 
 /// Poly1305 Message Authentication Code (MAC) (RFC 8439).
 ///
 /// Implements a high-speed symmetric MAC algorithm using a 256-bit key. Poly1305 is designed to assure
 /// message integrity and authenticity, effectively guarding against tampering in secure communication channels.
 class Poly1305 extends Converter<List<int>, List<int>> {
+  // Internal state variables for r, s, accumulator, and g
+  int _r0 = 0, _r1 = 0, _r2 = 0, _r3 = 0, _r4 = 0;
+  int _s0 = 0, _s1 = 0, _s2 = 0, _s3 = 0;
+  int _a0 = 0, _a1 = 0, _a2 = 0, _a3 = 0, _a4 = 0;
+  int _g1 = 0, _g2 = 0, _g3 = 0, _g4 = 0;
+
+  // A 17-byte block initialized with 0s, the last byte is set to 1
+  final Uint8List _block = Uint8List(17)..[16] = 1;
+
   /// Generates a Poly1305 Message Authentication Code (MAC) as per RFC 8439.
   ///
   /// Accepts a 256-bit key for message integrity and authenticity.
@@ -40,15 +50,6 @@ class Poly1305 extends Converter<List<int>, List<int>> {
     // Zero-initialize the accumulator
     _a0 = _a1 = _a2 = _a3 = _a4 = 0;
   }
-
-  // Internal state variables for r, s, accumulator, and g
-  int _r0 = 0, _r1 = 0, _r2 = 0, _r3 = 0, _r4 = 0;
-  int _s0 = 0, _s1 = 0, _s2 = 0, _s3 = 0;
-  int _a0 = 0, _a1 = 0, _a2 = 0, _a3 = 0, _a4 = 0;
-  int _g1 = 0, _g2 = 0, _g3 = 0, _g4 = 0;
-
-  // A 17-byte block initialized with 0s, the last byte is set to 1
-  final Uint8List _block = Uint8List(17)..[16] = 1;
 
   @override
   Uint8List convert(List<int> input) {
@@ -91,6 +92,9 @@ class Poly1305 extends Converter<List<int>, List<int>> {
   }
 
   void _accumulate(Uint8List chunk) {
+    // Bit mask
+    const int mask26 = 0x03FFFFFF;
+
     // Temporary variables for modular reduction
     int d0, d1, d2, d3, d4;
 
@@ -124,6 +128,10 @@ class Poly1305 extends Converter<List<int>, List<int>> {
   }
 
   Uint8List close() {
+    // Bit masks
+    const int mask26 = 0x03FFFFFF;
+    const int mask32 = 0xFFFFFFFF;
+
     // Zero out block buffer
     _block.fillRange(0, 17, 0);
 
